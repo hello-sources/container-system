@@ -9,4 +9,14 @@ public interface AnalysisService {
      **/
     List<String> getAllRpmLists(String containerID);
 
+    /**
+     * 将查询到的容器rpm保存到文件中
+     **/
+    void writeListToFile(List<String> rpms, String containerID);
+
+    /**
+     * 构建镜像自带相关rpm包之间的依赖关系
+     **/
+    void buildOriginDependencies(List<String> rpms, String containerID);
+
 }

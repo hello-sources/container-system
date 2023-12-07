@@ -5,6 +5,10 @@ import com.image.util.SshUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +23,11 @@ import java.util.Map;
 @Service
 public class AnalysisServiceImpl implements AnalysisService {
 
+    private SshUtil sshUtil;
+
     @Override
     public List<String> getAllRpmLists(String containerID) {
-        SshUtil sshUtil = new SshUtil();
+        sshUtil = new SshUtil();
         String command = "docker exec " + containerID + " rpm -qa";
         Map<String, Object> map = sshUtil.execCommand(command, "157.0.19.2", 10813, "root", "ictnj@123456");
         Object obj = map.get("out");
@@ -33,4 +39,34 @@ public class AnalysisServiceImpl implements AnalysisService {
         }
         return result;
     }
+
+    @Override
+    public void writeListToFile(List<String> rpms, String containerID) {
+        String getOSCmd = "docker exec " + containerID + " cat /etc/centos-release | awk '{print $1 substr($4, 1, 3)}'";
+        Map<String, Object> map = sshUtil.execCommand(getOSCmd, "157.0.19.2", 10813, "root", "ictnj@123456");
+        String os = map.get("out").toString().replaceAll("\\r|\\n", "");;
+
+        String getArch = "docker exec " + containerID + " arch";
+        map = sshUtil.execCommand(getArch, "157.0.19.2", 10813, "root", "ictnj@123456");
+        String arch = map.get("out").toString().replaceAll("\\r|\\n", "");;
+
+        // 文件路径
+        String filePath = "D:\\Workspace\\container-system\\image-system\\src\\conf\\";
+        String fileName = containerID + "-" + os + "-" + arch + ".conf";
+
+        Path path = Paths.get(filePath + fileName);
+        try {
+            Files.write(path, rpms);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.info("Data written to file successfully.");
+    }
+
+    @Override
+    public void buildOriginDependencies(List<String> rpms, String containerID) {
+
+    }
+
+
 }
