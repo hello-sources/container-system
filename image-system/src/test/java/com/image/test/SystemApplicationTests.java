@@ -1,11 +1,22 @@
 package com.image.test;
 
 import com.image.util.GraphViz;
+import com.image.util.Ssh2Util;
 import com.image.util.SshUtil;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootTest
@@ -18,7 +29,8 @@ class SystemApplicationTests {
     @Test
     void testSSHUtils() {
         SshUtil ssh = new SshUtil();
-        Map<String, Object> map = ssh.execCommand("docker images", "157.0.19.2", 10813, "root", "ictnj@123456");
+        Map<String, Object> map = ssh.execCommand("docker run -it --rm 1381cac9f3ef /bin/bash && rpm -qa | wc -l",
+            "157.0.19.2", 10813, "root", "ictnj@123456");
         String code = map.get("code").toString();
         System.out.println(code);
         String out = map.get("out").toString();
@@ -61,5 +73,97 @@ class SystemApplicationTests {
         gv.decreaseDpi();
         File out = new File(fileName+"."+ type);
         gv.writeGraphToFile( gv.getGraph( gv.getDotSource(), type ), out );
+    }
+
+    @Test
+    void testSsh2Util() throws Exception {
+        Ssh2Util ssh2Util = new Ssh2Util();
+        boolean conn = ssh2Util.connect("root", "ictnj@123456", "157.0.19.2", 10813);
+        if (conn) {
+            System.out.println("连接服务器成功");
+        } else {
+            System.out.println("连接服务器失败");
+        }
+    }
+
+    @Test
+    void testSsh2UtilExecCmd() throws Exception {
+        Ssh2Util ssh2Util = new Ssh2Util();
+        String command = "rpm -qa | wc -l";
+        String ans = ssh2Util.execCmd(command, "root", "ictnj@123456", "157.0.19.2", 10813);
+        System.out.println(ans);
+        return ;
+    }
+
+    @Test
+    void testSsh2UtilMultiCmd() throws Exception {
+        Ssh2Util ssh2Util = new Ssh2Util();
+        List<String> cmds = new ArrayList<>();
+        cmds.add("docker run -it --rm 1381cac9f3ef /bin/bash");
+        cmds.add("rpm -qa | wc -l");
+        ssh2Util.execCmdOnPTY(cmds, "root", "ictnj@123456", "157.0.19.2", 10813);
+        return ;
+    }
+
+    @Test
+    void testJschCmd() {
+        String host = "157.0.19.2";
+        String username = "root";
+        String password = "ictnj@123456";
+        int port = 10813; // 默认SSH端口号
+
+        try {
+            // 创建JSch对象
+            JSch jsch = new JSch();
+
+            // 创建SSH会话
+            Session session = jsch.getSession(username, host, port);
+            session.setPassword(password);
+            session.setConfig("StrictHostKeyChecking", "no"); // 关闭密钥检查
+
+            // 连接SSH会话
+            session.connect();
+
+            // 第一个命令：docker run 启动一个容器
+            executeCommand(session, "docker run -it --rm 1381cac9f3ef /bin/bash");
+
+            // 第二个命令：rpm -qa 查询容器内的rpm包
+            String rpmQueryResult = executeCommand(session, "rpm -qa | wc -l");
+
+            // 打印命令执行结果
+            System.out.println("RPM Packages in the Container:");
+            System.out.println(rpmQueryResult);
+
+            // 关闭会话
+            session.disconnect();
+
+        } catch (JSchException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String executeCommand(Session session, String command) throws JSchException, IOException {
+        // 创建执行命令的通道
+        ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
+        channelExec.setCommand(command);
+
+        // 获取命令执行结果
+        InputStream inputStream = channelExec.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+        // 连接通道
+        channelExec.connect();
+
+        // 读取命令执行结果
+        StringBuilder result = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            result.append(line).append("\n");
+        }
+
+        // 关闭通道
+        channelExec.disconnect();
+
+        return result.toString();
     }
 }

@@ -51,6 +51,19 @@
             <artifactId>ganymed-ssh2</artifactId>
             <version>262</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--jsch连接依赖-->
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.55</version> <!-- 请使用最新版本 -->
+        </dependency>
+
 
     </dependencies>
 

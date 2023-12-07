@@ -34,7 +34,6 @@ public class SshUtil {
      * @return
      */
     public Map<String, Object> execCommand(String command, String ip, int port,String user, String passwd) {
-        //        command = "export PATH=/szcs/software/slurm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin && " +command;
         Map<String, Object> result = new HashMap<>();
         Connection connection = new Connection(ip, port);
         Session session = null;
@@ -63,8 +62,8 @@ public class SshUtil {
 
             //得到脚本运行成功与否的标志 ：0－成功 非0－失败
             int ret = session.getExitStatus();
-            log.info("连接成功，ip:{},port:{},user:{},passwd:{},command:{},ret:{}, out:{},error:{}",ip, port, user, passwd,
-                command, ret, stdOutStr, stdErrStr);
+            log.info("连接成功，ip:{},port:{},user:{},passwd:{},command:{},ret:{},error:{}",ip, port, user, passwd,
+                command, ret, stdErrStr);
             result.put("code", ret);
             result.put("out", stdOutStr);
             result.put("error", stdErrStr);
@@ -103,7 +102,8 @@ public class SshUtil {
         } catch (IOException e) {
             log.error("获取输出失败", e);
         }
-        log.info("获取linux的标准输出的结果:{}", str);
+        // log.info("获取linux的标准输出的结果:{}", str);
+        log.info("获取Linux标准输出结果成功");
         return str;
     }
 }
