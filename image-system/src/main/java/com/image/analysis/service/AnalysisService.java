@@ -1,6 +1,7 @@
 package com.image.analysis.service;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AnalysisService {
 
@@ -18,5 +19,10 @@ public interface AnalysisService {
      * 构建镜像自带相关rpm包之间的依赖关系
      **/
     void buildOriginDependencies(List<String> rpms, String containerID);
+
+    /**
+     * 查询rpm包之间的依赖关系
+     **/
+    Map<String, String> queryDependencies(String deps, String containerID);
 
 }

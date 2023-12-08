@@ -62,8 +62,8 @@ public class SshUtil {
 
             //得到脚本运行成功与否的标志 ：0－成功 非0－失败
             int ret = session.getExitStatus();
-            log.info("连接成功，ip:{},port:{},user:{},passwd:{},command:{},ret:{},error:{}",ip, port, user, passwd,
-                command, ret, stdErrStr);
+            log.info("连接成功，ip:{},port:{},user:{},passwd:{},command:{},ret:{}",ip, port, user, passwd,
+                command, ret);
             result.put("code", ret);
             result.put("out", stdOutStr);
             result.put("error", stdErrStr);
@@ -107,4 +107,3 @@ public class SshUtil {
         return str;
     }
 }
-

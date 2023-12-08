@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * AnalysisTests
@@ -39,6 +40,19 @@ public class AnalysisTest {
     public void testSaveRpmsToFile() {
         List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("fdce0934ac89");
         analysisServiceImpl.writeListToFile(allRpmLists, "fdce0934ac89");
+    }
+
+    // 测试获取特定的rpm包信息
+    @Test
+    public void testAnalysisDependencies() {
+        Map<String, String> stringStringMap = analysisServiceImpl.queryDependencies("libgcc", "fdce0934ac89");
+        System.out.println("Total dependencies is " + stringStringMap.size());
+        for (Map.Entry<String, String> entry : stringStringMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            System.out.println("key: " + key + ", value: " + value);
+        }
+        return ;
     }
 
 }

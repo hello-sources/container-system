@@ -10,8 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * AnalysisServiceImpl
@@ -42,6 +45,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
     @Override
     public void writeListToFile(List<String> rpms, String containerID) {
+        sshUtil = new SshUtil();
         String getOSCmd = "docker exec " + containerID + " cat /etc/centos-release | awk '{print $1 substr($4, 1, 3)}'";
         Map<String, Object> map = sshUtil.execCommand(getOSCmd, "157.0.19.2", 10813, "root", "ictnj@123456");
         String os = map.get("out").toString().replaceAll("\\r|\\n", "");;
@@ -66,6 +70,27 @@ public class AnalysisServiceImpl implements AnalysisService {
     @Override
     public void buildOriginDependencies(List<String> rpms, String containerID) {
 
+    }
+
+    @Override
+    public Map<String, String> queryDependencies(String deps, String containerID) {
+        log.info("----start analysis dependencies----");
+        sshUtil = new SshUtil();
+        String command = "docker exec " + containerID + " rpm -e --test " + deps;
+        Map<String, Object> map = sshUtil.execCommand(command, "157.0.19.2", 10813, "root", "ictnj@123456");
+        String out = map.get("error").toString();
+        String[] needDependencies = out.split("\n");
+        Set<String> set = new HashSet<>();
+        for (int i = 1; i < needDependencies.length; i++) {
+            String[] tmp = needDependencies[i].split(" ");
+            set.add(tmp[tmp.length - 1]);
+        }
+        Map<String, String> ans = new HashMap<>();
+        for (String str : set) {
+            ans.put(str, deps);
+        }
+        log.info("----dependencies analysis end----");
+        return ans;
     }
 
 
