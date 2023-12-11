@@ -68,4 +68,18 @@ public class AnalysisTest {
         }
     }
 
+    // 测试构建所有rpm包信息dot图
+    @Test
+    public void testDrawDependenciesTopology() {
+        List<String> allRpms = analysisServiceImpl.getAllRpmLists("fdce0934ac89");
+        Map<String, String> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "fdce0934ac89");
+        Boolean draw = analysisServiceImpl.drawDependenciesTopology(allDeps);
+        if (draw) {
+            System.out.println("----draw dependencies succeed----");
+        } else {
+            System.out.println("----draw dependencies failed----");
+        }
+
+    }
+
 }

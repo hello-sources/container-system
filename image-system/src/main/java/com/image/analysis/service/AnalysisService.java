@@ -28,6 +28,6 @@ public interface AnalysisService {
     /**
      * 根据依赖关系生成.dot数据，并绘制可视化图
      **/
-    void drawDependenciesTopology(Map<String, String> deps);
+    Boolean drawDependenciesTopology(Map<String, String> deps);
 
 }

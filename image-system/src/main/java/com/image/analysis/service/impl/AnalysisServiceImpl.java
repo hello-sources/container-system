@@ -1,12 +1,15 @@
 package com.image.analysis.service.impl;
 
 import com.image.analysis.service.AnalysisService;
+import com.image.util.GraphViz;
 import com.image.util.SshConnectionPool;
 import com.image.util.SshUtil;
 import com.jcraft.jsch.Session;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,7 +32,7 @@ import java.util.Set;
 public class AnalysisServiceImpl implements AnalysisService {
 
     private SshUtil sshUtil;
-    private SshConnectionPool sshConnectionPool = new SshConnectionPool();
+    private SshConnectionPool sshConnectionPool;
 
     @Override
     public List<String> getAllRpmLists(String containerID) {
@@ -158,8 +161,43 @@ public class AnalysisServiceImpl implements AnalysisService {
     }
 
     @Override
-    public void drawDependenciesTopology(Map<String, String> deps) {
+    public Boolean drawDependenciesTopology(Map<String, String> deps) {
+        log.info("----start draw dependencies picture----");
+        try {
+            StringBuilder stb = new StringBuilder();
+            for (Map.Entry<String, String> entry : deps.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                String[] words = value.split("-");
+                String packageName = new String();
+                for (int i = 0; i < words.length; i++) {
+                    if (words[i].charAt(0) <= 'z' && words[i].charAt(0) >= 'a') {
+                        packageName += words[i];
+                        if (i < words.length - 1 && words[i + 1].charAt(0) <= 'z' && words[i + 1].charAt(0) >= 'a') {
+                            packageName += "-";
+                        }
+                    } else break;
+                }
+                stb.append("\"" + key + "\"" + " -> " + "\"" + packageName + "\"" + "; ");
+            }
+            String dotFormat = stb.toString();
 
+            GraphViz gv = new GraphViz();
+            gv.addln(gv.start_graph());
+            gv.add(dotFormat);
+            gv.addln(gv.end_graph());
+            String type = "png";
+            String dotFileName = "dotGraph-" + LocalDate.now().toString();
+            gv.decreaseDpi();
+            gv.decreaseDpi();
+            File out =
+                new File("D:\\Workspace\\container-system\\image-system\\src\\dot-picture\\" + dotFileName + "." + type);
+            gv.writeGraphToFile(gv.getGraph(gv.getDotSource(), type), out);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        log.info("----draw dependencies picture end----");
+        return true;
     }
 
 

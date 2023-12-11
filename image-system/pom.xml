@@ -63,6 +63,12 @@
             <artifactId>jsch</artifactId>
             <version>0.1.55</version> <!-- 请使用最新版本 -->
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>
