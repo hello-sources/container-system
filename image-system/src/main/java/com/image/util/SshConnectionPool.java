@@ -7,6 +7,13 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * SshConnectPool
  *
@@ -18,6 +25,7 @@ public class SshConnectionPool {
 
     private JSch jsch;
     private Session session;
+    private String charset = Charset.defaultCharset().toString();
 
     public SshConnectionPool() {
         this.jsch = new JSch();
@@ -51,23 +59,38 @@ public class SshConnectionPool {
     }
 
     // 执行SSH命令
-    public void executeCommand(Session session, String command) throws Exception {
+    public Map<String, Object> executeCommand(Session session, String command) throws Exception {
         ChannelExec channel = (ChannelExec) session.openChannel("exec");
         channel.setCommand(command);
 
+        Map<String, Object> result = new HashMap<>();
+        String stdOut = "";
+        String stdErr = "";
+        int statusCode = 0;
+
         // 获取命令执行结果
         java.io.InputStream in = channel.getInputStream();
+        java.io.InputStream err = channel.getErrStream();
         channel.connect();
 
-        byte[] tmp = new byte[1024];
+        byte[] tmp = new byte[10240];
         while (true) {
+            // 接收标准输出
             while (in.available() > 0) {
-                int i = in.read(tmp, 0, 1024);
+                int i = in.read(tmp, 0, 10240);
                 if (i < 0) break;
-                System.out.print(new String(tmp, 0, i));
+                String str = new String(tmp, 0, i);
+                stdOut += str + "\n";
+                System.out.print(str);
             }
+
+            // 接受标准错误输出
+            stdErr = getStrByInputStream(session, err);
+
+            // 接受返回状态码
             if (channel.isClosed()) {
                 if (in.available() > 0) continue;
+                statusCode = channel.getExitStatus();
                 System.out.println("exit-status: " + channel.getExitStatus());
                 break;
             }
@@ -75,9 +98,13 @@ public class SshConnectionPool {
                 Thread.sleep(1000);
             } catch (Exception ignored) {}
         }
-
+        result.put("out", stdOut);
+        result.put("err", stdErr);
+        result.put("code", statusCode);
         channel.disconnect();
+        return result;
     }
+
 
     // 执行交互式SSH命令
     public void executeInteractiveCommand(Session session, String command) throws Exception {
@@ -114,5 +141,29 @@ public class SshConnectionPool {
         } finally {
             channel.disconnect();
         }
+    }
+
+    // 处理工作流
+    public String getStrByInputStream(Session session , InputStream inputStream){
+        log.info("stdOut:{}", inputStream.toString());
+        StringBuffer stringBuffer = new StringBuffer();
+        byte[] bytes = new byte[1024];
+        int result = -1;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        String str = null;
+        try {
+            while ((result = inputStream.read(bytes, 0, bytes.length)) != -1){
+                byteArrayOutputStream.write(bytes,0,result);
+            }
+            str = new String(byteArrayOutputStream.toByteArray(), charset);
+            byteArrayOutputStream.flush();
+            byteArrayOutputStream.close();
+
+        } catch (IOException e) {
+            log.error("获取输出失败", e);
+        }
+        // log.info("获取linux的标准输出的结果:{}", str);
+        log.info("获取Linux标准输出结果成功");
+        return str;
     }
 }
