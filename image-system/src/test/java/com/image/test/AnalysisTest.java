@@ -79,7 +79,12 @@ public class AnalysisTest {
         } else {
             System.out.println("----draw dependencies failed----");
         }
-
     }
 
+    // 测试构建简单格式的rpm到文件中
+    @Test
+    public void testWriteSimpleListToFile() {
+        List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("fdce0934ac89");
+        analysisServiceImpl.writeSimpleListToFile(allRpmLists, "fdce0934ac89");
+    }
 }

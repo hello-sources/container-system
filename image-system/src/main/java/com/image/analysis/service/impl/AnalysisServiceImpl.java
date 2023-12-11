@@ -88,6 +88,54 @@ public class AnalysisServiceImpl implements AnalysisService {
         log.info("----Data written to file successfully----");
     }
 
+    // TODO 简化版的rpm列表
+    @Override
+    public void writeSimpleListToFile(List<String> rpms, String containerID) {
+        log.info("----start write simple rpm list----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+        try {
+            Session session = sshConnectionPool.getSession();
+
+            String getOSCmd = "docker exec " + containerID + " cat /etc/centos-release | awk '{print $1 substr($4, 1, 3)}'";
+            Map<String, Object> map = sshConnectionPool.executeCommand(session, getOSCmd);
+            String os = map.get("out").toString().replaceAll("\\r|\\n", "");;
+
+            String getArch = "docker exec " + containerID + " arch";
+            map = sshConnectionPool.executeCommand(session, getArch);
+            String arch = map.get("out").toString().replaceAll("\\r|\\n", "");
+
+            // 文件路径
+            String filePath = "D:\\Workspace\\container-system\\image-system\\src\\conf\\";
+            String fileName = containerID + "-" + os + "-" + arch + "-" + LocalDate.now().toString() + "-simple" +
+                ".conf";
+            Path path = Paths.get(filePath + fileName);
+
+            List<String> simpleList = new ArrayList<>();
+            StringBuilder stb = new StringBuilder();
+            for (int i = 0; i < rpms.size(); i++) {
+                String[] words = rpms.get(i).split("-");
+                stb.delete(0, stb.length());
+                for (int j = 0; j < words.length; j++) {
+                    if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
+                        stb.append(words[j]);
+                        if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
+                            stb.append("-");
+                        }
+                    } else break;
+                }
+                simpleList.add(stb.toString());
+            }
+
+            sshConnectionPool.releaseSession(session);
+
+            Files.write(path, simpleList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        log.info("----write rpm list finished----");
+    }
+
     @Override
     public Map<String, String> buildOriginDependencies(List<String> rpms, String containerID) {
         Map<String, String> ans = new HashMap<>();
@@ -102,6 +150,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         log.info("----start analysis dependencies----");
         SshConnectionPool sshConnectionPool = new SshConnectionPool();
         Map<String, String> ans = new HashMap<>();
+        System.out.println("获取依赖关系：" + dep);
         try {
             Session session = sshConnectionPool.getSession();
 

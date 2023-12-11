@@ -16,6 +16,11 @@ public interface AnalysisService {
     void writeListToFile(List<String> rpms, String containerID);
 
     /**
+     * 存储简化后的容器rpm保存到文件中
+     **/
+    void writeSimpleListToFile(List<String> rpms, String containerID);
+
+    /**
      * 构建镜像自带相关rpm包之间的依赖关系
      **/
     Map<String, String> buildOriginDependencies(List<String> rpms, String containerID);
