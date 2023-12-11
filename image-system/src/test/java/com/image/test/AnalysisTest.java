@@ -55,4 +55,17 @@ public class AnalysisTest {
         return ;
     }
 
+    // 测试构建所有的rpm包依赖信息
+    @Test
+    public void testAllRpmDependencies() {
+        List<String> allRpms = analysisServiceImpl.getAllRpmLists("fdce0934ac89");
+        Map<String, String> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "fdce0934ac89");
+        System.out.println("--------" + allDeps.size() + "--------");
+        for (Map.Entry<String, String> entry : allDeps.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            System.out.println(key + " -> " + value);
+        }
+    }
+
 }

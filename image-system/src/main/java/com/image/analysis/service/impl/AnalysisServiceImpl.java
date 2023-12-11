@@ -68,29 +68,48 @@ public class AnalysisServiceImpl implements AnalysisService {
     }
 
     @Override
-    public void buildOriginDependencies(List<String> rpms, String containerID) {
-
+    public Map<String, String> buildOriginDependencies(List<String> rpms, String containerID) {
+        Map<String, String> ans = new HashMap<>();
+        for (String rpm : rpms) {
+            ans.putAll(queryDependencies(rpm, containerID));
+        }
+        return ans;
     }
 
     @Override
-    public Map<String, String> queryDependencies(String deps, String containerID) {
+    public Map<String, String> queryDependencies(String dep, String containerID) {
         log.info("----start analysis dependencies----");
         sshUtil = new SshUtil();
-        String command = "docker exec " + containerID + " rpm -e --test " + deps;
+        String command = "docker exec " + containerID + " rpm -e --test " + dep;
         Map<String, Object> map = sshUtil.execCommand(command, "157.0.19.2", 10813, "root", "ictnj@123456");
         String out = map.get("error").toString();
         String[] needDependencies = out.split("\n");
         Set<String> set = new HashSet<>();
         for (int i = 1; i < needDependencies.length; i++) {
             String[] tmp = needDependencies[i].split(" ");
-            set.add(tmp[tmp.length - 1]);
+            String[] packages = tmp[tmp.length - 1].split("-");
+            String packageName = "";
+            for (int j = 0; j < packages.length; j++) {
+                if (packages[j].charAt(0) <= 'z' && packages[j].charAt(0) >= 'a') {
+                    packageName += packages[j];
+                    if (j < packages.length - 1 && packages[j + 1].charAt(0) <= 'z' && packages[j + 1].charAt(0) >= 'a') {
+                        packageName += "-";
+                    }
+                } else break;
+            }
+            set.add(packageName);
         }
         Map<String, String> ans = new HashMap<>();
         for (String str : set) {
-            ans.put(str, deps);
+            ans.put(str, dep);
         }
         log.info("----dependencies analysis end----");
         return ans;
+    }
+
+    @Override
+    public void drawDependenciesTopology(Map<String, String> deps) {
+
     }
 
 

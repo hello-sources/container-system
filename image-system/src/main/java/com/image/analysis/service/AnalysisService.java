@@ -18,11 +18,16 @@ public interface AnalysisService {
     /**
      * 构建镜像自带相关rpm包之间的依赖关系
      **/
-    void buildOriginDependencies(List<String> rpms, String containerID);
+    Map<String, String> buildOriginDependencies(List<String> rpms, String containerID);
 
     /**
      * 查询rpm包之间的依赖关系
      **/
-    Map<String, String> queryDependencies(String deps, String containerID);
+    Map<String, String> queryDependencies(String dep, String containerID);
+
+    /**
+     * 根据依赖关系生成.dot数据，并绘制可视化图
+     **/
+    void drawDependenciesTopology(Map<String, String> deps);
 
 }
