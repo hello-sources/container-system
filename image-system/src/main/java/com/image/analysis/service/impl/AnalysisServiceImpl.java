@@ -137,10 +137,19 @@ public class AnalysisServiceImpl implements AnalysisService {
     }
 
     @Override
-    public Map<String, String> buildOriginDependencies(List<String> rpms, String containerID) {
-        Map<String, String> ans = new HashMap<>();
+    public Map<String, List<String>> buildOriginDependencies(List<String> rpms, String containerID) {
+        Map<String, List<String>> ans = new HashMap<>();
         for (String rpm : rpms) {
-            ans.putAll(queryDependencies(rpm, containerID));
+            Map<String, String> rpmDependencies = queryDependencies(rpm, containerID);
+            for (Map.Entry<String, String> entry : rpmDependencies.entrySet()) {
+                if (ans.containsKey(entry.getKey())) {
+                    ans.get(entry.getKey()).add(entry.getValue());
+                } else {
+                    List<String> list = new ArrayList<>();
+                    list.add(entry.getValue());
+                    ans.put(entry.getKey(), list);
+                }
+            }
         }
         return ans;
     }
@@ -157,6 +166,10 @@ public class AnalysisServiceImpl implements AnalysisService {
             String command = "docker exec " + containerID + " rpm -e --test " + dep;
             Map<String, Object> map = sshConnectionPool.executeCommand(session, command);
             String out = map.get("err").toString();
+
+            // System.out.println("标准输出结果：" + map.get("out").toString());
+            // System.out.println("标准错误输出：" + out);
+
             String[] needDependencies = out.split("\n");
             Set<String> set = new HashSet<>();
             for (int i = 1; i < needDependencies.length; i++) {
@@ -210,24 +223,26 @@ public class AnalysisServiceImpl implements AnalysisService {
     }
 
     @Override
-    public Boolean drawDependenciesTopology(Map<String, String> deps) {
+    public Boolean drawDependenciesTopology(Map<String, List<String>> deps) {
         log.info("----start draw dependencies picture----");
         try {
             StringBuilder stb = new StringBuilder();
-            for (Map.Entry<String, String> entry : deps.entrySet()) {
+            for (Map.Entry<String, List<String>> entry : deps.entrySet()) {
                 String key = entry.getKey();
-                String value = entry.getValue();
-                String[] words = value.split("-");
-                String packageName = new String();
-                for (int i = 0; i < words.length; i++) {
-                    if (words[i].charAt(0) <= 'z' && words[i].charAt(0) >= 'a') {
-                        packageName += words[i];
-                        if (i < words.length - 1 && words[i + 1].charAt(0) <= 'z' && words[i + 1].charAt(0) >= 'a') {
-                            packageName += "-";
-                        }
-                    } else break;
+                List<String> values = entry.getValue();
+                for (int i = 0; i < values.size(); i++) {
+                    String[] words = values.get(i).split("-");
+                    String packageName = new String();
+                    for (int j = 0; j < words.length; j++) {
+                        if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
+                            packageName += words[j];
+                            if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
+                                packageName += "-";
+                            }
+                        } else break;
+                    }
+                    stb.append("\"" + key + "\"" + " -> " + "\"" + packageName + "\"" + "; ");
                 }
-                stb.append("\"" + key + "\"" + " -> " + "\"" + packageName + "\"" + "; ");
             }
             String dotFormat = stb.toString();
 

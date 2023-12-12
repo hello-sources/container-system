@@ -59,11 +59,11 @@ public class AnalysisTest {
     @Test
     public void testAllRpmDependencies() {
         List<String> allRpms = analysisServiceImpl.getAllRpmLists("fdce0934ac89");
-        Map<String, String> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "fdce0934ac89");
+        Map<String, List<String>> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "fdce0934ac89");
         System.out.println("--------" + allDeps.size() + "--------");
-        for (Map.Entry<String, String> entry : allDeps.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : allDeps.entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
+            String value = entry.getValue().toString();
             System.out.println(key + " -> " + value);
         }
     }
@@ -72,7 +72,7 @@ public class AnalysisTest {
     @Test
     public void testDrawDependenciesTopology() {
         List<String> allRpms = analysisServiceImpl.getAllRpmLists("fdce0934ac89");
-        Map<String, String> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "fdce0934ac89");
+        Map<String, List<String>> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "fdce0934ac89");
         Boolean draw = analysisServiceImpl.drawDependenciesTopology(allDeps);
         if (draw) {
             System.out.println("----draw dependencies succeed----");

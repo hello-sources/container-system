@@ -23,7 +23,7 @@ public interface AnalysisService {
     /**
      * 构建镜像自带相关rpm包之间的依赖关系
      **/
-    Map<String, String> buildOriginDependencies(List<String> rpms, String containerID);
+    Map<String, List<String>> buildOriginDependencies(List<String> rpms, String containerID);
 
     /**
      * 查询rpm包之间的依赖关系
@@ -33,6 +33,6 @@ public interface AnalysisService {
     /**
      * 根据依赖关系生成.dot数据，并绘制可视化图
      **/
-    Boolean drawDependenciesTopology(Map<String, String> deps);
+    Boolean drawDependenciesTopology(Map<String, List<String>> deps);
 
 }
