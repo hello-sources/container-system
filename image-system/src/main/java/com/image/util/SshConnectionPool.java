@@ -81,7 +81,7 @@ public class SshConnectionPool {
                 if (i < 0) break;
                 String str = new String(tmp, 0, i);
                 stdOut += str + "\n";
-                System.out.print(str);
+                // System.out.print(str);
             }
 
             // 接受标准错误输出

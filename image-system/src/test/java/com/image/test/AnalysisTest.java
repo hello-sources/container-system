@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -86,5 +87,30 @@ public class AnalysisTest {
     public void testWriteSimpleListToFile() {
         List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("fdce0934ac89");
         analysisServiceImpl.writeSimpleListToFile(allRpmLists, "fdce0934ac89");
+    }
+
+    // 测试单条可执行文件路径查询相关依赖
+    @Test
+    public void testQuerySingleFileDependency() {
+        List<String> rpms = analysisServiceImpl
+            .querySingleFileDependency("fdce0934ac89", "/linpack-xtreme/linpack-xtreme-1.1"
+                + ".5-amd64/AuthenticAMD");
+        System.out.println("rpm size = " + rpms.size());
+        for (int i = 0; i < rpms.size(); i++) {
+            System.out.println("rpm library :" + rpms.get(i));
+        }
+    }
+
+    // 测试多条可执行文件路径查询相关依赖
+    @Test
+    public void testQueryMultipleFileDependencies() {
+        List<String> filePaths = new ArrayList<>();
+        filePaths.add("/lib64/libuser.so.1.5.0");
+        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+        List<String> rpms = analysisServiceImpl.queryMultipleFileDependencies("fdce0934ac89", filePaths);
+        System.out.println("rpm size :" + rpms.size());
+        for (int i = 0; i < rpms.size(); i++) {
+            System.out.println("rpm library : " + rpms.get(i));
+        }
     }
 }

@@ -5,7 +5,6 @@ import com.image.util.GraphViz;
 import com.image.util.SshConnectionPool;
 import com.image.util.SshUtil;
 import com.jcraft.jsch.Session;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +19,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * AnalysisServiceImpl
@@ -264,16 +265,86 @@ public class AnalysisServiceImpl implements AnalysisService {
         return true;
     }
 
+    // TODO 根据用户传入的可执行文件路径查询依赖项
     @Override
-    public List<String> querySingleFileDependency(String containID, String filePath) {
+    public List<String> querySingleFileDependency(String containerID, String filePath) {
+        log.info("----start analysis single file dependency----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+        List<String> res = new ArrayList<>();
+        Set<String> set = new HashSet<>();
+        try {
+            Session session = sshConnectionPool.getSession();
 
-        return null;
+            // 例如AuthenticAMD路径为/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD
+            String lddCommand = "docker exec " + containerID + " ldd " + filePath;
+            Map<String, Object> map = sshConnectionPool.executeCommand(session, lddCommand);
+            String lddOut = map.get("out").toString();
+
+            // 正则表达式查找匹配的数据
+            String regex = "/[^\\s]+";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(lddOut);
+            while (matcher.find()) {
+                String dynamicFilePath = matcher.group().trim().replaceAll("\n", "");
+                String dynamicCommand = "docker exec " + containerID + " rpm -qf " + dynamicFilePath;
+                Map<String, Object> library = sshConnectionPool.executeCommand(session, dynamicCommand);
+                String rpmLibrary = library.get("out").toString().replaceAll("\n", "");
+                set.add(rpmLibrary);
+                System.out.println("library : " + rpmLibrary);
+            }
+
+            for (String lib : set) {
+                res.add(lib);
+            }
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        log.info("----analysis single file dependency finished----");
+        return res;
     }
 
     @Override
-    public List<String> queryAllFileDependencies(String containerID, List<String> filePaths) {
+    public List<String> queryMultipleFileDependencies(String containerID, List<String> filePaths) {
+        log.info("----start analysis multiple file dependency----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+        List<String> res = new ArrayList<>();
+        Set<String> set = new HashSet<>();
+        try {
+            Session session = sshConnectionPool.getSession();
 
-        return null;
+            for (int i = 0; i < filePaths.size(); i++) {
+                String singleCommand = "docker exec " + containerID + " ldd " + filePaths.get(i);
+                Map<String, Object> map = sshConnectionPool.executeCommand(session, singleCommand);
+                String lddOut = map.get("out").toString();
+
+                // 正则表达式查找匹配的数据
+                String regex = "/[^\\s]+";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(lddOut);
+                while (matcher.find()) {
+                    String dynamicFilePath = matcher.group().trim().replaceAll("\n", "");
+                    String dynamicCommand = "docker exec " + containerID + " rpm -qf " + dynamicFilePath;
+                    Map<String, Object> library = sshConnectionPool.executeCommand(session, dynamicCommand);
+                    String rpmLibrary = library.get("out").toString().replaceAll("\n", "");
+                    set.add(rpmLibrary);
+                    System.out.println("library : " + rpmLibrary);
+                }
+            }
+
+            for (String lib : set) {
+                res.add(lib);
+            }
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        log.info("----start analysis multiple file dependency----");
+        return res;
     }
 
     @Override

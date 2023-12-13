@@ -38,12 +38,12 @@ public interface AnalysisService {
     /**
      * 根据单个可执行文件路径，查询依赖的rpm包
      **/
-    List<String> querySingleFileDependency(String containID, String filePath);
+    List<String> querySingleFileDependency(String containerID, String filePath);
 
     /**
      * 查询所有可执行文件路径，查询依赖的rpm包
      **/
-    List<String> queryAllFileDependencies(String containerID, List<String> filePaths);
+    List<String> queryMultipleFileDependencies(String containerID, List<String> filePaths);
 
     /**
      * 查询单个rpm包及其关联依赖关系
