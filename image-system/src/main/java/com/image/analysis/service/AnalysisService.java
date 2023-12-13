@@ -35,4 +35,19 @@ public interface AnalysisService {
      **/
     Boolean drawDependenciesTopology(Map<String, List<String>> deps);
 
+    /**
+     * 根据单个可执行文件路径，查询依赖的rpm包
+     **/
+    List<String> querySingleFileDependency(String containID, String filePath);
+
+    /**
+     * 查询所有可执行文件路径，查询依赖的rpm包
+     **/
+    List<String> queryAllFileDependencies(String containerID, List<String> filePaths);
+
+    /**
+     * 查询单个rpm包及其关联依赖关系
+    **/
+    Map<String, List<String>> querySingleRpmDependency(String containerID, String rpmName);
+
 }

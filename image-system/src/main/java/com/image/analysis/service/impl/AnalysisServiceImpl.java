@@ -264,5 +264,23 @@ public class AnalysisServiceImpl implements AnalysisService {
         return true;
     }
 
+    @Override
+    public List<String> querySingleFileDependency(String containID, String filePath) {
+
+        return null;
+    }
+
+    @Override
+    public List<String> queryAllFileDependencies(String containerID, List<String> filePaths) {
+
+        return null;
+    }
+
+    @Override
+    public Map<String, List<String>> querySingleRpmDependency(String containerID, String rpmName) {
+
+        return null;
+    }
+
 
 }
