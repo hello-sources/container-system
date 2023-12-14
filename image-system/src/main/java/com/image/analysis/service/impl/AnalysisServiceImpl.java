@@ -16,9 +16,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -265,7 +268,6 @@ public class AnalysisServiceImpl implements AnalysisService {
         return true;
     }
 
-    // TODO 根据用户传入的可执行文件路径查询依赖项
     @Override
     public List<String> querySingleFileDependency(String containerID, String filePath) {
         log.info("----start analysis single file dependency----");
@@ -347,10 +349,40 @@ public class AnalysisServiceImpl implements AnalysisService {
         return res;
     }
 
+    // TODO 从一个依赖项出发，获取以该依赖为中心的关系拓扑图
     @Override
     public Map<String, List<String>> querySingleRpmDependency(String containerID, String rpmName) {
-
-        return null;
+        List<String> allRpms = getAllRpmLists(containerID);
+        Map<String, List<String>> allDeps = buildOriginDependencies(allRpms, containerID);
+        Map<String, List<String>> ans = new HashMap<>();
+        // for (Map.Entry<String, List<String>> entry : allDeps.entrySet()) {
+        //     String key = entry.getKey();
+        //     String value = entry.getValue().toString();
+        //     System.out.println("key : " + key + " value : " + value);
+        // }
+        Queue<String> que = new LinkedList<>();
+        que.add(rpmName);
+        while (!que.isEmpty()) {
+            String rpm = que.poll();
+            if (allDeps.get(rpm) == null) break;
+            ans.put(rpm, allDeps.get(rpm));
+            List<String> lists = allDeps.get(rpm);
+            for (int i = 0; i < lists.size(); i++) {
+                String[] words = lists.get(i).split("-");
+                String packageName = new String();
+                for (int j = 0; j < words.length; j++) {
+                    if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
+                        packageName += words[j];
+                        if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
+                            packageName += "-";
+                        }
+                    } else break;
+                }
+                que.add(packageName);
+                if (allDeps.get(packageName) != null) ans.put(packageName, allDeps.get(packageName));
+            }
+        }
+        return ans;
     }
 
 

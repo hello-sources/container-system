@@ -113,4 +113,30 @@ public class AnalysisTest {
             System.out.println("rpm library : " + rpms.get(i));
         }
     }
+
+    // 测试从一个依赖项出发，获取以该依赖为中心的关系拓扑图
+    @Test
+    public void testQuerySingleRpmDependency() {
+        Map<String, List<String>> stringListMap = analysisServiceImpl
+            .querySingleRpmDependency("fdce0934ac89", "coreutils");
+        System.out.println("----relative dependencies size " + stringListMap.size() + "----");
+        for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            System.out.println("key : " + key + " value : " + value);
+        }
+    }
+
+    // 测试以单个依赖为中心，画出依赖拓扑图
+    @Test
+    public void testDrawSingleVisionTopology() {
+        Map<String, List<String>> stringListMap = analysisServiceImpl
+            .querySingleRpmDependency("fdce0934ac89", "coreutils");
+        Boolean drawSucceed = analysisServiceImpl.drawDependenciesTopology(stringListMap);
+        if (drawSucceed) {
+            System.out.println("----draw single rpm dependency vision topology succeed----");
+        } else {
+            System.out.println("----draw single rpm dependency vision topology failed----");
+        }
+    }
 }
