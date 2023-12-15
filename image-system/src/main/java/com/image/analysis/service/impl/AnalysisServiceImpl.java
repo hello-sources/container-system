@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -349,7 +348,6 @@ public class AnalysisServiceImpl implements AnalysisService {
         return res;
     }
 
-    // TODO 从一个依赖项出发，获取以该依赖为中心的关系拓扑图
     @Override
     public Map<String, List<String>> querySingleRpmDependency(String containerID, String rpmName) {
         List<String> allRpms = getAllRpmLists(containerID);
@@ -383,6 +381,26 @@ public class AnalysisServiceImpl implements AnalysisService {
             }
         }
         return ans;
+    }
+
+    // TODO 查询所有待删除的RPM包
+    @Override
+    public List<String> listNeedDeleteRpms(String containerID) {
+        List<String> ans = new ArrayList<>();
+
+
+
+        return ans;
+    }
+
+    // TODO 删除依赖项，导出为新的镜像
+    @Override
+    public Boolean deleteAndCommitToImage(String containerID, String imageName, String tag,
+        List<String> deleteRpmList) {
+
+
+
+        return null;
     }
 
 

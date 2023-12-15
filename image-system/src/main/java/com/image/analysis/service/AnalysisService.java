@@ -50,4 +50,14 @@ public interface AnalysisService {
     **/
     Map<String, List<String>> querySingleRpmDependency(String containerID, String rpmName);
 
+    /**
+     * 列出所有待删除的rpm包
+    **/
+    List<String> listNeedDeleteRpms(String containerID);
+
+    /**
+     * 删除无关联的rpm包，导出为新的镜像
+     **/
+    Boolean deleteAndCommitToImage(String containerID, String imageName, String tag, List<String> deleteRpmList);
+
 }
