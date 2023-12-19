@@ -403,5 +403,12 @@ public class AnalysisServiceImpl implements AnalysisService {
         return null;
     }
 
+    // TODO 根据自定义的需求保留相应的依赖关系
+    @Override
+    public Boolean keepRpmDependencies(String containerID, List<String> rpmNames) {
+
+        return null;
+    }
+
 
 }

@@ -60,4 +60,9 @@ public interface AnalysisService {
      **/
     Boolean deleteAndCommitToImage(String containerID, String imageName, String tag, List<String> deleteRpmList);
 
+    /**
+     * 根据相关需求，保留相应的镜像依赖
+     **/
+    Boolean keepRpmDependencies(String containerID, List<String> rpmNames);
+
 }
