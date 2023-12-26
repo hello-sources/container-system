@@ -245,4 +245,19 @@ public class AnalysisTest {
             System.out.println(str);
         }
     }
+
+    // 测试列出自定义需要保留的包
+    @Test
+    public void testKeepRpmDependencies() {
+        List<String> filePaths = new ArrayList<>();
+        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+        List<String> rpmNames = new ArrayList<>();
+        rpmNames.add("vim-minimal-7.4.629-7.el7.x86_64");
+        rpmNames.add("centos-release-7-9.2009.0.el7.centos.x86_64");
+        List<String> keepRpmDependencies = analysisServiceImpl.keepRpmDependencies("30a9b9bec984", rpmNames, filePaths);
+        System.out.println("----keep dependencies size is : " + keepRpmDependencies.size() + "----");
+        for (String str : keepRpmDependencies) {
+            System.out.println(str);
+        }
+    }
 }

@@ -68,7 +68,7 @@ public interface AnalysisService {
     /**
      * 根据相关需求，保留相应的镜像依赖
      **/
-    Boolean keepRpmDependencies(String containerID, List<String> rpmNames);
+    List<String> keepRpmDependencies(String containerID, List<String> rpmNames, List<String> filePaths);
     
     /**
      * 根据手动优化的经验，需要保留的BaseOS的rpm包

@@ -475,16 +475,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
         // 根据手动裁剪的记录获取需要保留的包名
         String filePath = "D:\\Workspace\\container-system\\image-system\\src\\conf\\keepReservationDependencies.conf";
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            // 逐行读取文件内容
-            String line = new String();
-            while ((line = br.readLine()) != null) {
-                // 将每行添加到List中
-                rpmSet.add(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        List<String> ans = keepReservationDependencies(containerID, filePath);
 
         for (Map.Entry<String, List<String>> entry : rpmListMap.entrySet()) {
             rpmSet.add(entry.getKey());
@@ -493,7 +484,6 @@ public class AnalysisServiceImpl implements AnalysisService {
             }
         }
 
-        List<String> ans = new ArrayList<>();
         for (String str : rpmSet) {
             ans.add(str);
         }
@@ -510,11 +500,20 @@ public class AnalysisServiceImpl implements AnalysisService {
         return null;
     }
 
-    // TODO 根据自定义的需求保留相应的依赖关系
     @Override
-    public Boolean keepRpmDependencies(String containerID, List<String> rpmNames) {
+    public List<String> keepRpmDependencies(String containerID, List<String> rpmNames, List<String> filePaths) {
+        Set<String> rpmSet = new HashSet<>();
+        List<String> keepRpms = listKeepRpms(containerID, filePaths);
+        for (String str : keepRpms) {
+            rpmSet.add(str);
+        }
 
-        return null;
+        for (String str : rpmNames) {
+            rpmSet.add(str);
+        }
+
+        List<String> ans = new ArrayList<>(rpmSet);
+        return ans;
     }
 
     @Override
