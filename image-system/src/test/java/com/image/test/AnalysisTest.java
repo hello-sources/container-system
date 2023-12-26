@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class AnalysisTest {
     // 测试获取特定的rpm包信息
     @Test
     public void testAnalysisDependencies() {
-        Map<String, String> stringStringMap = analysisServiceImpl.queryDependencies("libgcc", "30a9b9bec984");
+        Map<String, String> stringStringMap = analysisServiceImpl.queryDependencies("libgcc-4.8.5-44.el7.x86_64", "30a9b9bec984");
         System.out.println("Total dependencies is " + stringStringMap.size());
         for (Map.Entry<String, String> entry : stringStringMap.entrySet()) {
             String key = entry.getKey();
@@ -66,6 +67,8 @@ public class AnalysisTest {
     @Test
     public void testAllRpmDependencies() {
         List<String> allRpms = analysisServiceImpl.getAllRpmLists("30a9b9bec984");
+        // List<String> allRpms = new ArrayList<>();
+        // allRpms.add("libgcc-4.8.5-44.el7.x86_64");
         Map<String, List<String>> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "30a9b9bec984");
         System.out.println("--------" + allDeps.size() + "--------");
         for (Map.Entry<String, List<String>> entry : allDeps.entrySet()) {
@@ -124,7 +127,7 @@ public class AnalysisTest {
     @Test
     public void testQuerySingleRpmDependency() {
         Map<String, List<String>> stringListMap = analysisServiceImpl
-            .querySingleRpmDependency("30a9b9bec984", "coreutils");
+            .querySingleRpmDependency("30a9b9bec984", "glibc-2.17-317.el7.x86_64");
         System.out.println("----relative dependencies size " + stringListMap.size() + "----");
         for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
             String key = entry.getKey();
@@ -137,7 +140,7 @@ public class AnalysisTest {
     @Test
     public void testDrawSingleVisionTopology() {
         Map<String, List<String>> stringListMap = analysisServiceImpl
-            .querySingleRpmDependency("30a9b9bec984", "coreutils");
+            .querySingleRpmDependency("30a9b9bec984", "glibc-2.17-317.el7.x86_64");
         Boolean drawSucceed = analysisServiceImpl.drawDependenciesTopology(stringListMap);
         if (drawSucceed) {
             System.out.println("----draw single rpm dependency vision topology succeed----");
@@ -146,7 +149,7 @@ public class AnalysisTest {
         }
     }
 
-    // 获取手动删除过程中必须要保留的rpm依赖
+    // 获取手动删除过程中可能要删除的rpm依赖
     @Test
     public void testAccessReservationDependencies() {
         List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("30a9b9bec984");
@@ -178,7 +181,48 @@ public class AnalysisTest {
         }
     }
 
-    // 测试列出要删除的依赖包
+    // 测试列出所有必须要删除的依赖包
+    @Test
+    public void testListNeedDeleteRpmsPreCode() {
+        List<String> filePaths = new ArrayList<>();
+        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+        List<String> directDependencies = analysisServiceImpl.queryMultipleFileDependencies("30a9b9bec984", filePaths);
+        System.out.println("needList size = " + directDependencies.size());
+        for (String str : directDependencies) {
+            System.out.println(str);
+        }
+
+        Map<String, List<String>> rpmListMap = new HashMap<>();
+        for (String direct : directDependencies) {
+            Map<String, List<String>> stringListMap = analysisServiceImpl.querySingleRpmDependency("30a9b9bec984", direct);
+            for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue().toString();
+                System.out.println("key : " + key + " value : " + value);
+            }
+            for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+                if (rpmListMap.containsKey(entry.getKey())) {
+                    rpmListMap.get(entry.getKey()).addAll(entry.getValue());
+                } else {
+                    rpmListMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
+        System.out.println("map size : " + rpmListMap.size());
+        for (Map.Entry<String, List<String>> entry : rpmListMap.entrySet()) {
+            System.out.println("key = " + entry.getKey());
+            System.out.println("value = " + entry.getValue());
+        }
+
+        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("30a9b9bec984", filePaths);
+        System.out.println("---need delete rpm number is: " + needDeleteRpms.size() + "----");
+        for (String str : needDeleteRpms) {
+            System.out.println(str);
+        }
+    }
+
+    // 测试列出所有待删除的rpm包
     @Test
     public void testListNeedDeleteRpms() {
         List<String> filePaths = new ArrayList<>();
@@ -186,6 +230,18 @@ public class AnalysisTest {
         List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("30a9b9bec984", filePaths);
         System.out.println("---need delete rpm number is: " + needDeleteRpms.size() + "----");
         for (String str : needDeleteRpms) {
+            System.out.println(str);
+        }
+    }
+
+    // 测试列出所有要保留的包
+    @Test
+    public void testListKeepRpms() {
+        List<String> filePaths = new ArrayList<>();
+        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+        List<String> keepRpms = analysisServiceImpl.listKeepRpms("30a9b9bec984", filePaths);
+        System.out.println("---need delete rpm number is: " + keepRpms.size() + "----");
+        for (String str : keepRpms) {
             System.out.println(str);
         }
     }

@@ -53,7 +53,12 @@ public interface AnalysisService {
     /**
      * 列出所有待删除的rpm包
     **/
-    List<String> listNeedDeleteRpms(String containerI, List<String> filePaths);
+    List<String> listNeedDeleteRpms(String containerID, List<String> filePaths);
+
+    /**
+     * 列出要保留的rpm包
+     **/
+    List<String> listKeepRpms(String containerID, List<String> filePaths);
 
     /**
      * 删除无关联的rpm包，导出为新的镜像

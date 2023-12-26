@@ -2,6 +2,7 @@ package com.image.analysis.service.impl;
 
 import com.image.analysis.service.AnalysisService;
 import com.image.util.GraphViz;
+import com.image.util.SimplifyUtil;
 import com.image.util.SshConnectionPool;
 import com.image.util.SshUtil;
 import com.jcraft.jsch.Session;
@@ -94,7 +95,6 @@ public class AnalysisServiceImpl implements AnalysisService {
         log.info("----Data written to file successfully----");
     }
 
-    // TODO 简化版的rpm列表
     @Override
     public void writeSimpleListToFile(List<String> rpms, String containerID) {
         log.info("----start write simple rpm list----");
@@ -121,14 +121,16 @@ public class AnalysisServiceImpl implements AnalysisService {
             for (int i = 0; i < rpms.size(); i++) {
                 String[] words = rpms.get(i).split("-");
                 stb.delete(0, stb.length());
-                for (int j = 0; j < words.length; j++) {
-                    if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
-                        stb.append(words[j]);
-                        if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
-                            stb.append("-");
-                        }
-                    } else break;
-                }
+                // for (int j = 0; j < words.length; j++) {
+                //     if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
+                //         stb.append(words[j]);
+                //         if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
+                //             stb.append("-");
+                //         }
+                //     } else break;
+                // }
+                SimplifyUtil simplifyUtil = new SimplifyUtil();
+                stb.append(simplifyUtil.processMultipleToSimplify(words));
                 simpleList.add(stb.toString());
             }
 
@@ -180,17 +182,20 @@ public class AnalysisServiceImpl implements AnalysisService {
             Set<String> set = new HashSet<>();
             for (int i = 1; i < needDependencies.length; i++) {
                 String[] tmp = needDependencies[i].split(" ");
-                String[] packages = tmp[tmp.length - 1].split("-");
-                String packageName = "";
-                for (int j = 0; j < packages.length; j++) {
-                    if (packages[j].charAt(0) <= 'z' && packages[j].charAt(0) >= 'a') {
-                        packageName += packages[j];
-                        if (j < packages.length - 1 && packages[j + 1].charAt(0) <= 'z' && packages[j + 1].charAt(0) >= 'a') {
-                            packageName += "-";
-                        }
-                    } else break;
-                }
-                set.add(packageName);
+                // String[] packages = tmp[tmp.length - 1].split("-");
+                // String packageName = "";
+                // for (int j = 0; j < packages.length; j++) {
+                //     if (packages[j].charAt(0) <= 'z' && packages[j].charAt(0) >= 'a') {
+                //         packageName += packages[j];
+                //         if (j < packages.length - 1 && packages[j + 1].charAt(0) <= 'z' && packages[j + 1].charAt(0) >= 'a') {
+                //             packageName += "-";
+                //         }
+                //     } else break;
+                // }
+                // SimplifyUtil simplifyUtil = new SimplifyUtil();
+                // packageName = simplifyUtil.processMultipleToSimplify(packages);
+                // set.add(packageName);
+                set.add(tmp[tmp.length - 1]);
             }
             for (String str : set) {
                 ans.put(str, dep);
@@ -234,19 +239,22 @@ public class AnalysisServiceImpl implements AnalysisService {
         try {
             StringBuilder stb = new StringBuilder();
             for (Map.Entry<String, List<String>> entry : deps.entrySet()) {
-                String key = entry.getKey();
+                SimplifyUtil simplifyUtil = new SimplifyUtil();
+                String[] keys = entry.getKey().split("-");
+                String key = simplifyUtil.processMultipleToSimplify(keys);
                 List<String> values = entry.getValue();
                 for (int i = 0; i < values.size(); i++) {
                     String[] words = values.get(i).split("-");
                     String packageName = new String();
-                    for (int j = 0; j < words.length; j++) {
-                        if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
-                            packageName += words[j];
-                            if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
-                                packageName += "-";
-                            }
-                        } else break;
-                    }
+                    // for (int j = 0; j < words.length; j++) {
+                    //     if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
+                    //         packageName += words[j];
+                    //         if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
+                    //             packageName += "-";
+                    //         }
+                    //     } else break;
+                    // }
+                    packageName = simplifyUtil.processMultipleToSimplify(words);
                     stb.append("\"" + key + "\"" + " -> " + "\"" + packageName + "\"" + "; ");
                 }
             }
@@ -370,17 +378,17 @@ public class AnalysisServiceImpl implements AnalysisService {
             List<String> lists = allDeps.get(rpm);
             for (int i = 0; i < lists.size(); i++) {
                 String[] words = lists.get(i).split("-");
-                String packageName = new String();
-                for (int j = 0; j < words.length; j++) {
-                    if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
-                        packageName += words[j];
-                        if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
-                            packageName += "-";
-                        }
-                    } else break;
-                }
-                que.add(packageName);
-                if (allDeps.get(packageName) != null) ans.put(packageName, allDeps.get(packageName));
+                // String packageName = new String();
+                // for (int j = 0; j < words.length; j++) {
+                //     if (words[j].charAt(0) <= 'z' && words[j].charAt(0) >= 'a') {
+                //         packageName += words[j];
+                //         if (j < words.length - 1 && words[j + 1].charAt(0) <= 'z' && words[j + 1].charAt(0) >= 'a') {
+                //             packageName += "-";
+                //         }
+                //     } else break;
+                // }
+                que.add(lists.get(i));
+                if (allDeps.get(lists.get(i)) != null) ans.put(lists.get(i), allDeps.get(lists.get(i)));
             }
         }
         return ans;
@@ -396,7 +404,11 @@ public class AnalysisServiceImpl implements AnalysisService {
 
         // 获取应用启动关联的所有依赖库
         Map<String, List<String>> rpmListMap = new HashMap<>();
+
+        Set<String> rpmSet = new HashSet<>();
+
         for (String direct : directDependencies) {
+            rpmSet.add(direct);
             Map<String, List<String>> stringListMap = querySingleRpmDependency(containerID, direct);
             for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
                 if (rpmListMap.containsKey(entry.getKey())) {
@@ -407,8 +419,20 @@ public class AnalysisServiceImpl implements AnalysisService {
             }
         }
 
+        // 根据手动裁剪的记录获取需要保留的包名
+        String filePath = "D:\\Workspace\\container-system\\image-system\\src\\conf\\keepReservationDependencies.conf";
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            // 逐行读取文件内容
+            String line = new String();
+            while ((line = br.readLine()) != null) {
+                // 将每行添加到List中
+                rpmSet.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // 根据上述依赖关系结果，获取待删除的rpm包
-        Set<String> rpmSet = new HashSet<>();
         for (Map.Entry<String, List<String>> entry : rpmListMap.entrySet()) {
             rpmSet.add(entry.getKey());
             for (String str : entry.getValue()) {
@@ -420,6 +444,58 @@ public class AnalysisServiceImpl implements AnalysisService {
         for (String str : allRpmLists) {
             if (rpmSet.contains(str)) continue;
             else ans.add(str);
+        }
+        return ans;
+    }
+
+    @Override
+    public List<String> listKeepRpms(String containerID, List<String> filePaths) {
+        // 获取该镜像的所有依赖
+        List<String> allRpmLists = getAllRpmLists(containerID);
+
+        // 获取应用直接依赖的库
+        List<String> directDependencies = queryMultipleFileDependencies(containerID, filePaths);
+
+        // 获取应用启动关联的所有依赖库
+        Map<String, List<String>> rpmListMap = new HashMap<>();
+
+        Set<String> rpmSet = new HashSet<>();
+
+        for (String direct : directDependencies) {
+            rpmSet.add(direct);
+            Map<String, List<String>> stringListMap = querySingleRpmDependency(containerID, direct);
+            for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+                if (rpmListMap.containsKey(entry.getKey())) {
+                    rpmListMap.get(entry.getKey()).addAll(entry.getValue());
+                } else {
+                    rpmListMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
+        // 根据手动裁剪的记录获取需要保留的包名
+        String filePath = "D:\\Workspace\\container-system\\image-system\\src\\conf\\keepReservationDependencies.conf";
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            // 逐行读取文件内容
+            String line = new String();
+            while ((line = br.readLine()) != null) {
+                // 将每行添加到List中
+                rpmSet.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for (Map.Entry<String, List<String>> entry : rpmListMap.entrySet()) {
+            rpmSet.add(entry.getKey());
+            for (String str : entry.getValue()) {
+                rpmSet.add(str);
+            }
+        }
+
+        List<String> ans = new ArrayList<>();
+        for (String str : rpmSet) {
+            ans.add(str);
         }
         return ans;
     }
