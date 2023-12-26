@@ -8,7 +8,10 @@ import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -383,13 +386,41 @@ public class AnalysisServiceImpl implements AnalysisService {
         return ans;
     }
 
-    // TODO 查询所有待删除的RPM包
     @Override
-    public List<String> listNeedDeleteRpms(String containerID) {
+    public List<String> listNeedDeleteRpms(String containerID, List<String> filePaths) {
+        // 获取该镜像的所有依赖
+        List<String> allRpmLists = getAllRpmLists(containerID);
+
+        // 获取应用直接依赖的库
+        List<String> directDependencies = queryMultipleFileDependencies(containerID, filePaths);
+
+        // 获取应用启动关联的所有依赖库
+        Map<String, List<String>> rpmListMap = new HashMap<>();
+        for (String direct : directDependencies) {
+            Map<String, List<String>> stringListMap = querySingleRpmDependency(containerID, direct);
+            for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+                if (rpmListMap.containsKey(entry.getKey())) {
+                    rpmListMap.get(entry.getKey()).addAll(entry.getValue());
+                } else {
+                    rpmListMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
+        // 根据上述依赖关系结果，获取待删除的rpm包
+        Set<String> rpmSet = new HashSet<>();
+        for (Map.Entry<String, List<String>> entry : rpmListMap.entrySet()) {
+            rpmSet.add(entry.getKey());
+            for (String str : entry.getValue()) {
+                rpmSet.add(str);
+            }
+        }
+
         List<String> ans = new ArrayList<>();
-
-
-
+        for (String str : allRpmLists) {
+            if (rpmSet.contains(str)) continue;
+            else ans.add(str);
+        }
         return ans;
     }
 
@@ -408,6 +439,20 @@ public class AnalysisServiceImpl implements AnalysisService {
     public Boolean keepRpmDependencies(String containerID, List<String> rpmNames) {
 
         return null;
+    }
+
+    @Override
+    public List<String> keepReservationDependencies(String containerID, String reservationFile) {
+        List<String> handProcess = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(reservationFile))) {
+            String line = new String();
+            while ((line = br.readLine()) != null) {
+                handProcess.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return handProcess;
     }
 
 

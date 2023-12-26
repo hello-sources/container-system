@@ -31,7 +31,7 @@ public class SshTest {
             // 执行任意条命令
             connectionPool.executeCommand(session, "ls -l");
             connectionPool.executeCommand(session, "pwd");
-            connectionPool.executeCommand(session, "docker exec cranky_spence hostname");
+            connectionPool.executeCommand(session, "docker exec kind_swartz hostname");
             connectionPool.executeCommand(session, "hostname");
 
             // 释放SSH会话回到连接池

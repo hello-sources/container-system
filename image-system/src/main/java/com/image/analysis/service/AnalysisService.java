@@ -53,7 +53,7 @@ public interface AnalysisService {
     /**
      * 列出所有待删除的rpm包
     **/
-    List<String> listNeedDeleteRpms(String containerID);
+    List<String> listNeedDeleteRpms(String containerI, List<String> filePaths);
 
     /**
      * 删除无关联的rpm包，导出为新的镜像
@@ -64,5 +64,10 @@ public interface AnalysisService {
      * 根据相关需求，保留相应的镜像依赖
      **/
     Boolean keepRpmDependencies(String containerID, List<String> rpmNames);
+    
+    /**
+     * 根据手动优化的经验，需要保留的BaseOS的rpm包
+     **/
+    List<String> keepReservationDependencies(String containerID, String reservationFile);
 
 }

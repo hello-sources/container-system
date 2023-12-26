@@ -29,7 +29,7 @@ class SystemApplicationTests {
     @Test
     void testSSHUtils() {
         SshUtil ssh = new SshUtil();
-        Map<String, Object> map = ssh.execCommand("docker run -it --rm 1381cac9f3ef /bin/bash && rpm -qa | wc -l",
+        Map<String, Object> map = ssh.execCommand("docker run -it --rm 30a9b9bec984 /bin/bash && rpm -qa | wc -l",
             "157.0.19.2", 10813, "root", "ictnj@123456");
         String code = map.get("code").toString();
         System.out.println(code);
@@ -99,7 +99,7 @@ class SystemApplicationTests {
     void testSsh2UtilMultiCmd() throws Exception {
         Ssh2Util ssh2Util = new Ssh2Util();
         List<String> cmds = new ArrayList<>();
-        cmds.add("docker run -it --rm 1381cac9f3ef /bin/bash");
+        cmds.add("docker run -it --rm 30a9b9bec984 /bin/bash");
         cmds.add("rpm -qa | wc -l");
         ssh2Util.execCmdOnPTY(cmds, "root", "ictnj@123456", "157.0.19.2", 10813);
         return ;
@@ -125,7 +125,7 @@ class SystemApplicationTests {
             session.connect();
 
             // 第一个命令：docker run 启动一个容器
-            executeCommand(session, "docker run -it --rm 1381cac9f3ef /bin/bash");
+            executeCommand(session, "docker run -it --rm 30a9b9bec984 /bin/bash");
 
             // 第二个命令：rpm -qa 查询容器内的rpm包
             String rpmQueryResult = executeCommand(session, "rpm -qa | wc -l");
