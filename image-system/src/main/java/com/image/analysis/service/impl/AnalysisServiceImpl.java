@@ -490,14 +490,57 @@ public class AnalysisServiceImpl implements AnalysisService {
         return ans;
     }
 
-    // TODO 删除依赖项，导出为新的镜像
     @Override
     public Boolean deleteAndCommitToImage(String containerID, String imageName, String tag,
         List<String> deleteRpmList) {
+        log.info("----start optimize docker image----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+
+        try {
+            Session session = sshConnectionPool.getSession();
+
+            log.info("----start delete rpm dependencies----");
+            // 删除容器中相关依赖项
+            StringBuilder stb = new StringBuilder();
+            stb.append("docker exec " + containerID + " rpm -e --nodeps ");
+            for (String str : deleteRpmList) {
+                stb.append(str + " ");
+            }
+            Map<String, Object> map = sshConnectionPool.executeCommand(session, stb.toString());
+            Object code = map.get("code");
+            if (((Integer) code).intValue() != 0)  {
+                Object err = map.get("err");
+                System.out.println("err : " + err.toString());
+                log.info("----删除镜像依赖失败----");
+                return false;
+            }
+
+            // 导出容器为镜像
+            log.info("----start commit to a new image----");
+            // 以docker commit的方式导出，会保留镜像层信息
+            imageName += "-commit";
+            String command = "docker commit " + containerID + " " + imageName + ":" + tag;
+            Map<String, Object> commitImage = sshConnectionPool.executeCommand(session, command);
+            code = commitImage.get("code");
+            if (((Integer) code).intValue() != 0)  {
+                Object err = map.get("err");
+                System.out.println("err : " + err.toString());
+                log.info("----导出为新镜像失败----");
+                return false;
+            }
+
+            // 以docker save的方式导出
 
 
+            // 以docker export的方式导出
 
-        return null;
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        log.info("----optimize docker image succeed----");
+        return true;
     }
 
     @Override

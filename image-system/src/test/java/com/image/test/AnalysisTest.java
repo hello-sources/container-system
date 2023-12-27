@@ -260,4 +260,20 @@ public class AnalysisTest {
             System.out.println(str);
         }
     }
+
+    // 测试删除rpm包以及导出为镜像
+    @Test
+    public void testDeleteAndCommitToImage() {
+        List<String> filePaths = new ArrayList<>();
+        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("fdf983a625e8", filePaths);
+        String imageName = "test-image";
+        String tag = "v1";
+        Boolean res = analysisServiceImpl.deleteAndCommitToImage("fdf983a625e8", imageName, tag, needDeleteRpms);
+        if (res) {
+            System.out.println("优化镜像成功");
+        } else {
+            System.out.println("优化镜像失败");
+        }
+    }
 }
