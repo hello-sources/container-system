@@ -269,11 +269,54 @@ public class AnalysisTest {
         List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("fdf983a625e8", filePaths);
         String imageName = "test-image";
         String tag = "v1";
-        Boolean res = analysisServiceImpl.deleteAndCommitToImage("fdf983a625e8", imageName, tag, needDeleteRpms);
-        if (res) {
+        Boolean deleteRes = analysisServiceImpl.deleteRpmDependencies("fdf983a625e8", needDeleteRpms);
+        Boolean commitRes = analysisServiceImpl.commitToImage("fdf983a625e8", imageName, tag);
+        if (deleteRes && commitRes) {
             System.out.println("优化镜像成功");
         } else {
             System.out.println("优化镜像失败");
+        }
+    }
+
+    // 测试使用commit导出为新镜像
+    @Test
+    public void testCommitToImage() {
+        String imageName = "test-image";
+        String tag = "v2";
+        Boolean commitRes = analysisServiceImpl.commitToImage("fdf983a625e8", imageName, tag);
+        if (commitRes) {
+            System.out.println("commit导出镜像成功");
+        } else {
+            System.out.println("commit导出镜像失败");
+        }
+    }
+
+    // 测试使用export导出为新镜像
+    @Test
+    public void testExportToTarImage() {
+        String imageName = "test-image";
+        String tag = "v2";
+        String path = "/root/docker_images";
+        Boolean exportRes = analysisServiceImpl.exportToTarImage("fdf983a625e8", imageName, tag, path);
+        if (exportRes) {
+            System.out.println("export导出tar镜像成功");
+        } else {
+            System.out.println("export导出tar镜像失败");
+        }
+    }
+
+    // 测试使用import导入tar格式文件为新镜像
+    @Test
+    public void testImportTarToImage() {
+        String path = "/root/docker_images";
+        String sourTarImageName = "test-image-export-v2-2023-12-27.tar";
+        String destImageName = "test-image-import";
+        String tag = "v1";
+        Boolean importRes = analysisServiceImpl.importTarToImage(path, sourTarImageName, destImageName, tag);
+        if (importRes) {
+            System.out.println("import导入tar镜像成功");
+        } else {
+            System.out.println("import导入tar镜像失败");
         }
     }
 }

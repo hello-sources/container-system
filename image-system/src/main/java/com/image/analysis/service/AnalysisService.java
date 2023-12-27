@@ -63,7 +63,7 @@ public interface AnalysisService {
     /**
      * 删除无关联的rpm包，导出为新的镜像
      **/
-    Boolean deleteAndCommitToImage(String containerID, String imageName, String tag, List<String> deleteRpmList);
+    Boolean deleteRpmDependencies(String containerID, List<String> deleteRpmList);
 
     /**
      * 根据相关需求，保留相应的镜像依赖
@@ -74,5 +74,20 @@ public interface AnalysisService {
      * 根据手动优化的经验，需要保留的BaseOS的rpm包
      **/
     List<String> keepReservationDependencies(String containerID, String reservationFile);
+
+    /**
+     * 使用commit导出为新的镜像
+     **/
+    Boolean commitToImage(String containerID, String imageName, String tag);
+
+    /**
+     * 使用export导出为tar格式镜像
+     **/
+    Boolean exportToTarImage(String containerID, String imageName, String tag, String path);
+
+    /**
+     * 使用import导入镜像
+     **/
+    Boolean importTarToImage(String path, String sourTarImageName, String destImageName, String destTag);
 
 }

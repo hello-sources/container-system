@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -491,8 +492,7 @@ public class AnalysisServiceImpl implements AnalysisService {
     }
 
     @Override
-    public Boolean deleteAndCommitToImage(String containerID, String imageName, String tag,
-        List<String> deleteRpmList) {
+    public Boolean deleteRpmDependencies(String containerID, List<String> deleteRpmList) {
         log.info("----start optimize docker image----");
         SshConnectionPool sshConnectionPool = new SshConnectionPool();
 
@@ -514,26 +514,6 @@ public class AnalysisServiceImpl implements AnalysisService {
                 log.info("----删除镜像依赖失败----");
                 return false;
             }
-
-            // 导出容器为镜像
-            log.info("----start commit to a new image----");
-            // 以docker commit的方式导出，会保留镜像层信息
-            imageName += "-commit";
-            String command = "docker commit " + containerID + " " + imageName + ":" + tag;
-            Map<String, Object> commitImage = sshConnectionPool.executeCommand(session, command);
-            code = commitImage.get("code");
-            if (((Integer) code).intValue() != 0)  {
-                Object err = map.get("err");
-                System.out.println("err : " + err.toString());
-                log.info("----导出为新镜像失败----");
-                return false;
-            }
-
-            // 以docker save的方式导出
-
-
-            // 以docker export的方式导出
-
 
             sshConnectionPool.releaseSession(session);
         } catch (Exception exception) {
@@ -571,6 +551,94 @@ public class AnalysisServiceImpl implements AnalysisService {
             e.printStackTrace();
         }
         return handProcess;
+    }
+
+    @Override
+    public Boolean commitToImage(String containerID, String imageName, String tag) {
+        // 导出容器为镜像
+        log.info("----start commit to a new image----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+
+        try {
+            Session session = sshConnectionPool.getSession();
+            // 以docker commit的方式导出，会保留镜像层信息
+            imageName = imageName.toLowerCase();
+            imageName += "-commit";
+            String command = "docker commit " + containerID + " " + imageName + ":" + tag;
+            Map<String, Object> commitImage = sshConnectionPool.executeCommand(session, command);
+            Object code = commitImage.get("code");
+            if (((Integer) code).intValue() != 0)  {
+                Object err = commitImage.get("err");
+                System.out.println("err : " + err.toString());
+                log.info("----导出为新镜像失败----");
+                return false;
+            }
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        log.info("----commit to a new image end----");
+        return true;
+    }
+
+    @Override
+    public Boolean exportToTarImage(String containerID, String imageName, String tag, String path) {
+        log.info("----start export to a new image----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+
+        try {
+            Session session = sshConnectionPool.getSession();
+
+            // 以docker export的方式导出镜像为tar文件，不保留镜像层信息
+            imageName = imageName.toLowerCase();
+            imageName += "-export";
+            String command = "docker export -o " + path + "/" + imageName + "-" + tag + "-" + LocalDate.now() + ".tar"
+                + " " + containerID;
+            Map<String, Object> commitImage = sshConnectionPool.executeCommand(session, command);
+            Object code = commitImage.get("code");
+            if (((Integer) code).intValue() != 0)  {
+                Object err = commitImage.get("err");
+                System.out.println("err : " + err.toString());
+                log.info("----导出为tar格式镜像失败----");
+                return false;
+            }
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        log.info("----export to a new tar image end----");
+        return true;
+    }
+
+    @Override
+    public Boolean importTarToImage(String path, String sourTarImageName, String destImageName, String destTag) {
+        log.info("----start import tar file to image----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+
+        try {
+            Session session = sshConnectionPool.getSession();
+
+            // 以docker import导入tar格式的镜像文件
+            destImageName = destImageName.toLowerCase(Locale.ROOT);
+            String command = "docker import " + path + "/" + sourTarImageName + " " + destImageName + ":" + destTag;
+            Map<String, Object> commitImage = sshConnectionPool.executeCommand(session, command);
+            Object code = commitImage.get("code");
+            if (((Integer) code).intValue() != 0)  {
+                Object err = commitImage.get("err");
+                System.out.println("err : " + err.toString());
+                log.info("----导入tar文件为镜像失败----");
+                return false;
+            }
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+
+        log.info("---import tar file to image end----");
+        return true;
     }
 
 
