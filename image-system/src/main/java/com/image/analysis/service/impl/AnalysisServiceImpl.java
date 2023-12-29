@@ -302,8 +302,10 @@ public class AnalysisServiceImpl implements AnalysisService {
                 String dynamicCommand = "docker exec " + containerID + " rpm -qf " + dynamicFilePath;
                 Map<String, Object> library = sshConnectionPool.executeCommand(session, dynamicCommand);
                 String rpmLibrary = library.get("out").toString().replaceAll("\n", "");
-                set.add(rpmLibrary);
-                System.out.println("library : " + rpmLibrary);
+                if (!rpmLibrary.contains("is not owned by any package")) {
+                    set.add(rpmLibrary);
+                    System.out.println("library : " + rpmLibrary);
+                }
             }
 
             for (String lib : set) {
@@ -342,8 +344,10 @@ public class AnalysisServiceImpl implements AnalysisService {
                     String dynamicCommand = "docker exec " + containerID + " rpm -qf " + dynamicFilePath;
                     Map<String, Object> library = sshConnectionPool.executeCommand(session, dynamicCommand);
                     String rpmLibrary = library.get("out").toString().replaceAll("\n", "");
-                    set.add(rpmLibrary);
-                    System.out.println("library : " + rpmLibrary);
+                    if (!rpmLibrary.contains("is not owned by any package")) {
+                        set.add(rpmLibrary);
+                        System.out.println("library : " + rpmLibrary);
+                    }
                 }
             }
 
@@ -405,12 +409,14 @@ public class AnalysisServiceImpl implements AnalysisService {
 
         // 获取应用启动关联的所有依赖库
         Map<String, List<String>> rpmListMap = new HashMap<>();
-
+        Map<String, List<String>> stringListMap = new HashMap<>();
         Set<String> rpmSet = new HashSet<>();
 
         for (String direct : directDependencies) {
             rpmSet.add(direct);
-            Map<String, List<String>> stringListMap = querySingleRpmDependency(containerID, direct);
+            System.out.println("当前查询的直接依赖项是：" + direct);
+            stringListMap.clear();
+            stringListMap = querySingleRpmDependency(containerID, direct);
             for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
                 if (rpmListMap.containsKey(entry.getKey())) {
                     rpmListMap.get(entry.getKey()).addAll(entry.getValue());

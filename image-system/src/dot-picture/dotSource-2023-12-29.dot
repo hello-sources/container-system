@@ -1,0 +1,2 @@
+digraph G {
+"nss-softokn-freebl" -> "glibc"; "nss-softokn-freebl" -> "nss-util"; "nss-softokn-freebl" -> "bash"; "nss-softokn-freebl" -> "nspr"; "nspr" -> "glibc"; "bash" -> "glibc"; "bash" -> "ncurses-libs"; "glibc-common" -> "tzdata"; "glibc-common" -> "glibc"; "glibc-common" -> "libselinux"; "glibc-common" -> "bash"; "nss-util" -> "glibc"; "nss-util" -> "nspr"; "glibc" -> "glibc-common"; "glibc" -> "nss-softokn-freebl"; "libselinux" -> "glibc"; "libselinux" -> "pcre"; "libselinux" -> "libsepol"; }

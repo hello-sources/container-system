@@ -35,7 +35,8 @@ public class AnalysisTest {
     @Test
     public void getRpmList() {
         // containerID 30a9b9bec984, 暂时使用Linpack—xtreme的容器
-        List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("30a9b9bec984");
+        // containerID f31a185d234f WRF镜像创建的容器
+        List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("f31a185d234f");
         for (String str : allRpmLists) {
             System.out.println(str);
         }
@@ -46,14 +47,14 @@ public class AnalysisTest {
     // 测试获取将rpm包信息保存到文件中
     @Test
     public void testSaveRpmsToFile() {
-        List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("30a9b9bec984");
-        analysisServiceImpl.writeListToFile(allRpmLists, "30a9b9bec984");
+        List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("f31a185d234f");
+        analysisServiceImpl.writeListToFile(allRpmLists, "f31a185d234f");
     }
 
     // 测试获取特定的rpm包信息
     @Test
     public void testAnalysisDependencies() {
-        Map<String, String> stringStringMap = analysisServiceImpl.queryDependencies("libgcc-4.8.5-44.el7.x86_64", "30a9b9bec984");
+        Map<String, String> stringStringMap = analysisServiceImpl.queryDependencies("libgcc-4.8.5-44.el7.x86_64", "f31a185d234f");
         System.out.println("Total dependencies is " + stringStringMap.size());
         for (Map.Entry<String, String> entry : stringStringMap.entrySet()) {
             String key = entry.getKey();
@@ -66,10 +67,10 @@ public class AnalysisTest {
     // 测试构建所有的rpm包依赖信息
     @Test
     public void testAllRpmDependencies() {
-        List<String> allRpms = analysisServiceImpl.getAllRpmLists("30a9b9bec984");
+        List<String> allRpms = analysisServiceImpl.getAllRpmLists("f31a185d234f");
         // List<String> allRpms = new ArrayList<>();
         // allRpms.add("libgcc-4.8.5-44.el7.x86_64");
-        Map<String, List<String>> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "30a9b9bec984");
+        Map<String, List<String>> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "f31a185d234f");
         System.out.println("--------" + allDeps.size() + "--------");
         for (Map.Entry<String, List<String>> entry : allDeps.entrySet()) {
             String key = entry.getKey();
@@ -81,8 +82,8 @@ public class AnalysisTest {
     // 测试构建所有rpm包信息dot图
     @Test
     public void testDrawDependenciesTopology() {
-        List<String> allRpms = analysisServiceImpl.getAllRpmLists("30a9b9bec984");
-        Map<String, List<String>> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "30a9b9bec984");
+        List<String> allRpms = analysisServiceImpl.getAllRpmLists("f31a185d234f");
+        Map<String, List<String>> allDeps = analysisServiceImpl.buildOriginDependencies(allRpms, "f31a185d234f");
         Boolean draw = analysisServiceImpl.drawDependenciesTopology(allDeps);
         if (draw) {
             System.out.println("----draw dependencies succeed----");
@@ -101,9 +102,13 @@ public class AnalysisTest {
     // 测试单条可执行文件路径查询相关依赖
     @Test
     public void testQuerySingleFileDependency() {
-        List<String> rpms = analysisServiceImpl
-            .querySingleFileDependency("30a9b9bec984", "/linpack-xtreme/linpack-xtreme-1.1"
-                + ".5-amd64/AuthenticAMD");
+        // List<String> rpms = analysisServiceImpl
+        //     .querySingleFileDependency("30a9b9bec984", "/linpack-xtreme/linpack-xtreme-1.1"
+        //         + ".5-amd64/AuthenticAMD");
+
+        List<String> rpms = analysisServiceImpl.querySingleFileDependency("f31a185d234f", "/comsoftware/wrf/WPS-4"
+            + ".3/geogrid.exe");
+
         System.out.println("rpm size = " + rpms.size());
         for (int i = 0; i < rpms.size(); i++) {
             System.out.println("rpm library :" + rpms.get(i));
@@ -114,9 +119,17 @@ public class AnalysisTest {
     @Test
     public void testQueryMultipleFileDependencies() {
         List<String> filePaths = new ArrayList<>();
-        filePaths.add("/lib64/libuser.so.1.5.0");
-        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
-        List<String> rpms = analysisServiceImpl.queryMultipleFileDependencies("30a9b9bec984", filePaths);
+
+        filePaths.add("/comsoftware/wrf/WPS-4.3/geogrid.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/ungrib.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/metgrid.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/real.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/wrf.exe");
+        filePaths.add("/usr/local/bin/mpirun");
+        filePaths.add("/usr/bin/ln");
+
+
+        List<String> rpms = analysisServiceImpl.queryMultipleFileDependencies("f31a185d234f", filePaths);
         System.out.println("rpm size :" + rpms.size());
         for (int i = 0; i < rpms.size(); i++) {
             System.out.println("rpm library : " + rpms.get(i));
@@ -127,7 +140,7 @@ public class AnalysisTest {
     @Test
     public void testQuerySingleRpmDependency() {
         Map<String, List<String>> stringListMap = analysisServiceImpl
-            .querySingleRpmDependency("30a9b9bec984", "glibc-2.17-317.el7.x86_64");
+            .querySingleRpmDependency("f31a185d234f", "nspr-4.32.0-1.el7_9.x86_64");
         System.out.println("----relative dependencies size " + stringListMap.size() + "----");
         for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
             String key = entry.getKey();
@@ -140,7 +153,7 @@ public class AnalysisTest {
     @Test
     public void testDrawSingleVisionTopology() {
         Map<String, List<String>> stringListMap = analysisServiceImpl
-            .querySingleRpmDependency("30a9b9bec984", "glibc-2.17-317.el7.x86_64");
+            .querySingleRpmDependency("f31a185d234f", "glibc-2.17-325.el7_9.x86_64");
         Boolean drawSucceed = analysisServiceImpl.drawDependenciesTopology(stringListMap);
         if (drawSucceed) {
             System.out.println("----draw single rpm dependency vision topology succeed----");
@@ -152,7 +165,7 @@ public class AnalysisTest {
     // 获取手动删除过程中可能要删除的rpm依赖
     @Test
     public void testAccessReservationDependencies() {
-        List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("30a9b9bec984");
+        List<String> allRpmLists = analysisServiceImpl.getAllRpmLists("f31a185d234f");
         Set<String> set = new HashSet<>();
         for (String rpm : allRpmLists) {
             set.add(rpm);
@@ -185,8 +198,18 @@ public class AnalysisTest {
     @Test
     public void testListNeedDeleteRpmsPreCode() {
         List<String> filePaths = new ArrayList<>();
-        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
-        List<String> directDependencies = analysisServiceImpl.queryMultipleFileDependencies("30a9b9bec984", filePaths);
+        // filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+
+        filePaths.add("/comsoftware/wrf/WPS-4.3/geogrid.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/ungrib.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/metgrid.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/real.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/wrf.exe");
+        filePaths.add("/usr/local/bin/mpirun");
+        filePaths.add("/usr/bin/ln");
+
+
+        List<String> directDependencies = analysisServiceImpl.queryMultipleFileDependencies("f31a185d234f", filePaths);
         System.out.println("needList size = " + directDependencies.size());
         for (String str : directDependencies) {
             System.out.println(str);
@@ -194,7 +217,7 @@ public class AnalysisTest {
 
         Map<String, List<String>> rpmListMap = new HashMap<>();
         for (String direct : directDependencies) {
-            Map<String, List<String>> stringListMap = analysisServiceImpl.querySingleRpmDependency("30a9b9bec984", direct);
+            Map<String, List<String>> stringListMap = analysisServiceImpl.querySingleRpmDependency("f31a185d234f", direct);
             for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue().toString();
@@ -215,7 +238,7 @@ public class AnalysisTest {
             System.out.println("value = " + entry.getValue());
         }
 
-        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("30a9b9bec984", filePaths);
+        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("f31a185d234f", filePaths);
         System.out.println("---need delete rpm number is: " + needDeleteRpms.size() + "----");
         for (String str : needDeleteRpms) {
             System.out.println(str);
@@ -226,8 +249,17 @@ public class AnalysisTest {
     @Test
     public void testListNeedDeleteRpms() {
         List<String> filePaths = new ArrayList<>();
-        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
-        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("30a9b9bec984", filePaths);
+        // filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+
+        filePaths.add("/comsoftware/wrf/WPS-4.3/geogrid.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/ungrib.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/metgrid.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/real.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/wrf.exe");
+        filePaths.add("/usr/local/bin/mpirun");
+        filePaths.add("/usr/bin/ln");
+
+        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("f31a185d234f", filePaths);
         System.out.println("---need delete rpm number is: " + needDeleteRpms.size() + "----");
         for (String str : needDeleteRpms) {
             System.out.println(str);
