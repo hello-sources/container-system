@@ -76,7 +76,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
             String getOSCmd = "docker exec " + containerID + " cat /etc/centos-release | awk '{print $1 substr($4, 1, 3)}'";
             Map<String, Object> map = sshConnectionPool.executeCommand(session, getOSCmd);
-            String os = map.get("out").toString().replaceAll("\\r|\\n", "");;
+            String os = map.get("out").toString().replaceAll("\\r|\\n", "");
 
             String getArch = "docker exec " + containerID + " arch";
             map = sshConnectionPool.executeCommand(session, getArch);
