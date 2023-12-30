@@ -73,11 +73,11 @@ public class SshConnectionPool {
         java.io.InputStream err = channel.getErrStream();
         channel.connect();
 
-        byte[] tmp = new byte[10240];
+        byte[] tmp = new byte[20480];
         while (true) {
             // 接收标准输出
             while (in.available() > 0) {
-                int i = in.read(tmp, 0, 10240);
+                int i = in.read(tmp, 0, 20480);
                 if (i < 0) break;
                 String str = new String(tmp, 0, i);
                 stdOut += str + "\n";
@@ -91,7 +91,7 @@ public class SshConnectionPool {
             if (channel.isClosed()) {
                 if (in.available() > 0) continue;
                 statusCode = channel.getExitStatus();
-                System.out.println("exit-status: " + channel.getExitStatus());
+                // System.out.println("exit-status: " + channel.getExitStatus());
                 break;
             }
             try {
@@ -131,7 +131,7 @@ public class SshConnectionPool {
                 }
                 if (channel.isClosed()) {
                     if (in.available() > 0) continue;
-                    System.out.println("exit-status: " + channel.getExitStatus());
+                    // System.out.println("exit-status: " + channel.getExitStatus());
                     break;
                 }
                 try {
@@ -145,7 +145,7 @@ public class SshConnectionPool {
 
     // 处理工作流
     public String getStrByInputStream(Session session , InputStream inputStream){
-        log.info("stdOut:{}", inputStream.toString());
+        // log.info("stdOut:{}", inputStream.toString());
         StringBuffer stringBuffer = new StringBuffer();
         byte[] bytes = new byte[1024];
         int result = -1;
@@ -163,7 +163,7 @@ public class SshConnectionPool {
             log.error("获取输出失败", e);
         }
         // log.info("获取linux的标准输出的结果:{}", str);
-        log.info("获取Linux标准输出结果成功");
+        // log.info("获取Linux标准输出结果成功");
         return str;
     }
 }

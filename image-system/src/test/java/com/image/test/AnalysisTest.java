@@ -11,6 +11,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLOutput;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -248,6 +251,11 @@ public class AnalysisTest {
     // 测试列出所有待删除的rpm包
     @Test
     public void testListNeedDeleteRpms() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = now.format(formatter);
+
+        System.out.println("开始进行测试的时间：" + formattedDateTime);
         List<String> filePaths = new ArrayList<>();
         // filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
 
@@ -264,6 +272,13 @@ public class AnalysisTest {
         for (String str : needDeleteRpms) {
             System.out.println(str);
         }
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("结束测试的时间：" + LocalDateTime.now().format(formatter));
+        System.out.println("共计测试时间, 从 " + now.format(formatter) + " 持续到 ： " + LocalDateTime.now().format(formatter));
     }
 
     // 测试列出所有要保留的包
@@ -297,12 +312,28 @@ public class AnalysisTest {
     @Test
     public void testDeleteAndCommitToImage() {
         List<String> filePaths = new ArrayList<>();
-        filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
-        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("fdf983a625e8", filePaths);
-        String imageName = "test-image";
+        // filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+
+        filePaths.add("/comsoftware/wrf/WPS-4.3/geogrid.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/ungrib.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/metgrid.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/real.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/wrf.exe");
+        filePaths.add("/usr/local/bin/mpirun");
+        filePaths.add("/usr/bin/ln");
+
+
+        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("f31a185d234f", filePaths);
+
+        System.out.println("---need delete rpm number is: " + needDeleteRpms.size() + "----");
+        for (String str : needDeleteRpms) {
+            System.out.println(str);
+        }
+
+        String imageName = "wrf-optimize";
         String tag = "v1";
-        Boolean deleteRes = analysisServiceImpl.deleteRpmDependencies("fdf983a625e8", needDeleteRpms);
-        Boolean commitRes = analysisServiceImpl.commitToImage("fdf983a625e8", imageName, tag);
+        Boolean deleteRes = analysisServiceImpl.deleteRpmDependencies("f31a185d234f", needDeleteRpms);
+        Boolean commitRes = analysisServiceImpl.commitToImage("f31a185d234f", imageName, tag);
         if (deleteRes && commitRes) {
             System.out.println("优化镜像成功");
         } else {
@@ -310,12 +341,43 @@ public class AnalysisTest {
         }
     }
 
+    // 测试删除rpm包
+    @Test
+    public void testDeleteRpmDependencies() {
+        List<String> filePaths = new ArrayList<>();
+        // filePaths.add("/linpack-xtreme/linpack-xtreme-1.1.5-amd64/AuthenticAMD");
+
+        filePaths.add("/comsoftware/wrf/WPS-4.3/geogrid.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/ungrib.exe");
+        filePaths.add("/comsoftware/wrf/WPS-4.3/metgrid.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/real.exe");
+        filePaths.add("/comsoftware/wrf/WRF-4.3/run/wrf.exe");
+        filePaths.add("/usr/local/bin/mpirun");
+        filePaths.add("/usr/bin/ln");
+
+        List<String> needDeleteRpms = analysisServiceImpl.listNeedDeleteRpms("f31a185d234f", filePaths);
+
+        System.out.println("---need delete rpm number is: " + needDeleteRpms.size() + "----");
+        for (String str : needDeleteRpms) {
+            System.out.println(str);
+        }
+
+        Boolean deleteRes = analysisServiceImpl.deleteRpmDependencies("f31a185d234f", needDeleteRpms);
+        if (deleteRes) {
+            System.out.println("删除依赖成功");
+        } else {
+            System.out.println("删除依赖失败");
+        }
+    }
+
+
+
     // 测试使用commit导出为新镜像
     @Test
     public void testCommitToImage() {
-        String imageName = "test-image";
-        String tag = "v2";
-        Boolean commitRes = analysisServiceImpl.commitToImage("fdf983a625e8", imageName, tag);
+        String imageName = "wrf-optimize";
+        String tag = "v1";
+        Boolean commitRes = analysisServiceImpl.commitToImage("f31a185d234f", imageName, tag);
         if (commitRes) {
             System.out.println("commit导出镜像成功");
         } else {
@@ -326,10 +388,10 @@ public class AnalysisTest {
     // 测试使用export导出为新镜像
     @Test
     public void testExportToTarImage() {
-        String imageName = "test-image";
-        String tag = "v2";
+        String imageName = "wrf-optimize";
+        String tag = "v1";
         String path = "/root/docker_images";
-        Boolean exportRes = analysisServiceImpl.exportToTarImage("fdf983a625e8", imageName, tag, path);
+        Boolean exportRes = analysisServiceImpl.exportToTarImage("f31a185d234f", imageName, tag, path);
         if (exportRes) {
             System.out.println("export导出tar镜像成功");
         } else {
@@ -341,8 +403,8 @@ public class AnalysisTest {
     @Test
     public void testImportTarToImage() {
         String path = "/root/docker_images";
-        String sourTarImageName = "test-image-export-v2-2023-12-27.tar";
-        String destImageName = "test-image-import";
+        String sourTarImageName = "wrf-optimize-export-v1-2023-12-30.tar";
+        String destImageName = "wrf-optimize-import";
         String tag = "v1";
         Boolean importRes = analysisServiceImpl.importTarToImage(path, sourTarImageName, destImageName, tag);
         if (importRes) {

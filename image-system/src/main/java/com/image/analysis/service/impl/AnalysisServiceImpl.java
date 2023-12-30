@@ -44,7 +44,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
     @Override
     public List<String> getAllRpmLists(String containerID) {
-        log.info("----start query all rpm list----");
+        // log.info("----start query all rpm list----");
         SshConnectionPool sshConnectionPool = new SshConnectionPool();
         List<String> result = new ArrayList<>();
         try {
@@ -63,7 +63,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         } catch (Exception exception) {
             exception.printStackTrace();
         }
-        log.info("----query rpm list down----");
+        // log.info("----query rpm list down----");
         return result;
     }
 
@@ -323,7 +323,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
     @Override
     public List<String> queryMultipleFileDependencies(String containerID, List<String> filePaths) {
-        log.info("----start analysis multiple file dependency----");
+        // log.info("----start analysis multiple file dependency----");
         SshConnectionPool sshConnectionPool = new SshConnectionPool();
         List<String> res = new ArrayList<>();
         Set<String> set = new HashSet<>();
@@ -346,7 +346,7 @@ public class AnalysisServiceImpl implements AnalysisService {
                     String rpmLibrary = library.get("out").toString().replaceAll("\n", "");
                     if (!rpmLibrary.contains("is not owned by any package")) {
                         set.add(rpmLibrary);
-                        System.out.println("library : " + rpmLibrary);
+                        // System.out.println("library : " + rpmLibrary);
                     }
                 }
             }
@@ -360,7 +360,7 @@ public class AnalysisServiceImpl implements AnalysisService {
             e.printStackTrace();
         }
 
-        log.info("----start analysis multiple file dependency----");
+        // log.info("----start analysis multiple file dependency----");
         return res;
     }
 
@@ -414,7 +414,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
         for (String direct : directDependencies) {
             rpmSet.add(direct);
-            System.out.println("当前查询的直接依赖项是：" + direct);
+            // System.out.println("当前查询的直接依赖项是：" + direct);
             stringListMap.clear();
             stringListMap = querySingleRpmDependency(containerID, direct);
             for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
