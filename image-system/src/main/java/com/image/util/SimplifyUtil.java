@@ -27,6 +27,7 @@ public class SimplifyUtil {
 
     // 处理复杂字符串到对应的格式，主要是处理dpkg输出的内容，简化为指定的包名
     public List<String> processStringToFormat(String str) {
+        if (str == null || str == "") return null;
         List<String> ans = new ArrayList<>();
         String[] strs = str.split("[,|]");
         for (String s : strs) {

@@ -1,12 +1,14 @@
 package com.image.analysis.service.impl;
 
 import com.image.analysis.service.DebianAnalysisService;
+import com.image.util.GraphViz;
 import com.image.util.SimplifyUtil;
 import com.image.util.SshConnectionPool;
 import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,8 +20,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * DebianAnalysisServiceImpl
@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 public class DebianAnalysisServiceImpl implements DebianAnalysisService {
-
 
     @Override
     public List<String> getAllDpkgLists(String containerID) {
@@ -138,7 +137,6 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
             // 一个dpkg包可能需要多个依赖项，因此存成List类型，可能会存在Pre_Depends和Depends重复的现象，使用Set去重
             Set<String> set = new HashSet<>();
             List<String> dep = new ArrayList<>();
-            depends_list.addAll(pre_depends_list);
 
             // while (matcher.find()) {
             //     set.add(matcher.group());
@@ -146,9 +144,16 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
             // while (pre_matcher.find()) {
             //     set.add(pre_matcher.group());
             // }
+            if (depends_list != null) {
+                for (String s : depends_list) {
+                    set.add(s);
+                }
+            }
 
-            for (String s : depends_list) {
-                set.add(s);
+            if (pre_depends_list != null) {
+                for (String s : pre_depends_list) {
+                    set.add(s);
+                }
             }
 
             for (String str : set) {
@@ -219,13 +224,61 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
 
     @Override
     public Map<String, List<String>> buildOriginDependencies(List<String> dpkgs, String containerID) {
+        Map<String, List<String>> ans = new HashMap<>();
+        for (String dpkg : dpkgs) {
+            Map<String, List<String>> singleDpkgMap = queryDependencies(dpkg, containerID);
+            if (ans.containsKey(dpkg)) {
+                for (String tmp : singleDpkgMap.get(dpkg)) {
+                    if (ans.get(dpkg).contains(tmp)) continue;
+                    else ans.get(dpkg).add(tmp);
+                }
+            } else {
+                ans.put(dpkg, singleDpkgMap.get(dpkg));
+            }
+        }
+        return ans;
+    }
 
+    @Override
+    public Boolean drawDependenciesTopology(Map<String, List<String>> deps) {
+        log.info("----start draw dpkg dependencies picture----");
+        try {
+            StringBuilder stb = new StringBuilder();
+            for (Map.Entry<String, List<String>> entry : deps.entrySet()) {
+                String key = entry.getKey();
+                List<String> values = entry.getValue();
+                for (String dpkg : values) {
+                    stb.append("\"" + key + "\"" + " -> " + "\"" + dpkg + "\"" + "; ");
+                }
+            }
+            String dotFormat = stb.toString();
 
+            GraphViz gv = new GraphViz();
+            gv.addln(gv.start_graph());
+            gv.add(dotFormat);
+            gv.addln(gv.end_graph());
+            String type = "png";
+            String dotFileName = "dotGraph-debian-" + LocalDate.now().toString();
+            gv.decreaseDpi();
+            gv.decreaseDpi();
+            File out =
+                new File("D:\\Workspace\\container-system\\image-system\\src\\dot-picture\\" + dotFileName + "." + type);
+            int res = gv.writeGraphToFile(gv.getGraph(gv.getDotSource(), type), out);
+            if (res == -1 || !out.exists()) return false;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        log.info("----draw dependencies picture end----");
+        return true;
+    }
 
+    @Override
+    public Map<String, List<String>> querySingleDpkgDependency(String containerID, String rpmName) {
 
 
         return null;
     }
+
 
 
 

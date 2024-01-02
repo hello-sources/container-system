@@ -77,4 +77,45 @@ public class DebianAnalysisTest {
         return ;
     }
 
+    // 测试绘制dpkg相关依赖关系拓扑图，原生方式可能会缺乏相关依赖项
+    @Test
+    public void testDrawDependenciesTopology_absent() {
+        Map<String, List<String>> dpkgMap = debianAnalysisServiceImpl
+            .buildOriginDependencies_absent("3023e8383575");
+        Boolean res = debianAnalysisServiceImpl.drawDependenciesTopology(dpkgMap);
+        if (res) {
+            System.out.println("draw dpkg dependencies succeed");
+        } else {
+            System.out.println("draw dpkg dependencies failed");
+        }
+    }
+
+    // 测试构建dpkg相关依赖关系拓扑图
+    @Test
+    public void testBuildOriginDependencies() {
+        List<String> allDpkgLists = debianAnalysisServiceImpl.getAllDpkgLists("3023e8383575");
+        Map<String, List<String>> dpkgMap = debianAnalysisServiceImpl
+            .buildOriginDependencies(allDpkgLists, "3023e8383575");
+        System.out.println("map size : " + dpkgMap.size());
+        for (Map.Entry<String, List<String>> entry : dpkgMap.entrySet()) {
+            String key = entry.getKey();
+            String val = entry.getValue().toString();
+            System.out.println(key + " -> " + val);
+        }
+    }
+
+    // 测试绘制全部dpkg依赖拓扑图
+    @Test
+    public void testDrawDependenciesTopology() {
+        List<String> allDpkgLists = debianAnalysisServiceImpl.getAllDpkgLists("3023e8383575");
+        Map<String, List<String>> dpkgMap = debianAnalysisServiceImpl
+            .buildOriginDependencies(allDpkgLists, "3023e8383575");
+        Boolean res = debianAnalysisServiceImpl.drawDependenciesTopology(dpkgMap);
+        if (res) {
+            System.out.println("构建dpkg依赖拓扑成功");
+        } else {
+            System.out.println("构建dpkg依赖拓扑失败");
+        }
+    }
+
 }

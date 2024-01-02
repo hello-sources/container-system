@@ -266,7 +266,7 @@ public class AnalysisServiceImpl implements AnalysisService {
             gv.add(dotFormat);
             gv.addln(gv.end_graph());
             String type = "png";
-            String dotFileName = "dotGraph-" + LocalDate.now().toString();
+            String dotFileName = "dotGraph-redhat-" + LocalDate.now().toString();
             gv.decreaseDpi();
             gv.decreaseDpi();
             File out =

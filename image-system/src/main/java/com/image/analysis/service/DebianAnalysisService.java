@@ -30,9 +30,15 @@ public interface DebianAnalysisService {
      **/
     Map<String, List<String>> buildOriginDependencies(List<String> dpkgs, String containerID);
 
+    /**
+     * 根据依赖关系生成.dot数据，并绘制可视化图
+     **/
+    Boolean drawDependenciesTopology(Map<String, List<String>> deps);
 
-
-
+    /**
+     * 查询单个Dpkg包及其关联依赖关系
+     **/
+    Map<String, List<String>> querySingleDpkgDependency(String containerID, String rpmName);
 
 
 
