@@ -1,6 +1,7 @@
 package com.image.test;
 
 import com.image.util.GraphViz;
+import com.image.util.SimplifyUtil;
 import com.image.util.Ssh2Util;
 import com.image.util.SshUtil;
 import com.jcraft.jsch.ChannelExec;
@@ -165,5 +166,16 @@ class SystemApplicationTests {
         channelExec.disconnect();
 
         return result.toString();
+    }
+
+    @Test
+    void testProcessStringToFormat() {
+        String str = "mysql-common (>= 5.6.51-1debian9), mysql-client (= 5.6.51-1debian9), perl, psmisc, libaio1 (>= 0.3.93)"
+            + ", libc6 (>= 2.17), libgcc1 (>= 1:3.0), libnuma1 (>= 2.0.11), libstdc++6 (>= 5.2), debconf (>= 0.5) | debconf-2.0, init-system-helpers (>= 1.18~), adduser, gpgv | gpgv2 | gpgv1";
+        SimplifyUtil simplifyUtil = new SimplifyUtil();
+        List<String> strings = simplifyUtil.processStringToFormat(str);
+        for (String s : strings) {
+            System.out.print(s + " ");
+        }
     }
 }

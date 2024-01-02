@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -50,18 +49,32 @@ public class DebianAnalysisTest {
         }
     }
 
-    // 测试获取单个dpkg包的依赖
+    // 测试获取单个dpkg包的依赖，包含Depends和Pre_Depends
     @Test
     public void testQueryDependencies() {
-        // libperl5.24 perl
+        // libperl5.24、perl、tar之类的
         Map<String, List<String>> dpkgDepMap = debianAnalysisServiceImpl
-            .queryDependencies("perl", "3023e8383575");
+            .queryDependencies("mysql-community-server", "3023e8383575");
 
         for (Map.Entry<String, List<String>> entry : dpkgDepMap.entrySet()) {
             String key = entry.getKey().toString();
             String value = entry.getValue().toString();
             System.out.println("key : " + key + ", value : " + value);
         }
+    }
+
+    // 测试使用原生方式获取全部dpkg包的依赖
+    @Test
+    public void testBuildOriginDependencies_absent() {
+        Map<String, List<String>> stringListMap = debianAnalysisServiceImpl
+            .buildOriginDependencies_absent("3023e8383575");
+        System.out.println("map size : " + stringListMap.size());
+        for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            System.out.println("key : " + key + ", value : " + value);
+        }
+        return ;
     }
 
 }

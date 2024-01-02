@@ -21,9 +21,15 @@ public interface DebianAnalysisService {
     Map<String, List<String>> queryDependencies(String dpkg, String containerID);
 
     /**
+     * 构建镜像自带相关dpkg包之间的依赖关系，使用dpkg原生方式，但是会缺少相关依赖项
+     **/
+    Map<String, List<String>> buildOriginDependencies_absent(String containerID);
+
+    /**
      * 构建镜像自带相关dpkg包之间的依赖关系
      **/
     Map<String, List<String>> buildOriginDependencies(List<String> dpkgs, String containerID);
+
 
 
 
