@@ -36,9 +36,11 @@ public interface DebianAnalysisService {
     Boolean drawDependenciesTopology(Map<String, List<String>> deps);
 
     /**
-     * 查询单个Dpkg包及其关联依赖关系
+     * 查询单个dpkg包及其关联依赖关系
      **/
-    Map<String, List<String>> querySingleDpkgDependency(String containerID, String rpmName);
+    Map<String, List<String>> querySingleDpkgDependency(String containerID, String dpkgName);
+
+
 
 
 

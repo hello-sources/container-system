@@ -16,9 +16,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -273,10 +275,23 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
     }
 
     @Override
-    public Map<String, List<String>> querySingleDpkgDependency(String containerID, String rpmName) {
-
-
-        return null;
+    public Map<String, List<String>> querySingleDpkgDependency(String containerID, String dpkgName) {
+        List<String> allDpkgLists = getAllDpkgLists(containerID);
+        Map<String, List<String>> allDpkgMap = buildOriginDependencies(allDpkgLists, containerID);
+        Map<String, List<String>> ans = new HashMap<>();
+        Queue<String> que = new LinkedList<>();
+        que.add(dpkgName);
+        while (!que.isEmpty()) {
+            String dpkg = que.poll();
+            if (allDpkgMap.get(dpkg) == null) break;
+            ans.put(dpkg, allDpkgMap.get(dpkg));
+            List<String> lists = allDpkgMap.get(dpkg);
+            for (int i = 0; i < lists.size(); i++) {
+                que.add(lists.get(i));
+                if (allDpkgMap.get(lists.get(i)) != null) ans.put(lists.get(i), allDpkgMap.get(lists.get(i)));
+            }
+        }
+        return ans;
     }
 
 

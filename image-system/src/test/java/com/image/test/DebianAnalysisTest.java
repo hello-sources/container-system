@@ -118,4 +118,16 @@ public class DebianAnalysisTest {
         }
     }
 
+    // 测试以单个dpkg构建依赖拓扑
+    @Test
+    public void testQuerySingleDpkgDependency() {
+        Map<String, List<String>> stringListMap = debianAnalysisServiceImpl
+            .querySingleDpkgDependency("3023e8383575", "mysql-community-client");
+        System.out.println("single dpkg dpeendency map size : " + stringListMap.size());
+        for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+            String key = entry.getKey();
+            String val = entry.getValue().toString();
+            System.out.println(key + " -> " + val);
+        }
+    }
 }
