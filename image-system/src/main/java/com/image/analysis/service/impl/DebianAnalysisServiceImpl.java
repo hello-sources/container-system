@@ -8,7 +8,10 @@ import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +25,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * DebianAnalysisServiceImpl
@@ -52,9 +57,10 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
             }
             Object obj = dpkgMap.get("out");
             String str = obj.toString();
-            String[] split = str.split("\n");
-            for (int i = 0; i < split.length; i++) {
-                result.add(split[i]);
+            String[] dpkgs = str.split("\n");
+            for (int i = 0; i < dpkgs.length; i++) {
+                // result.add(dpkgs[i].split(":")[0]);
+                result.add(dpkgs[i]);
             }
 
             sshConnectionPool.releaseSession(session);
@@ -283,7 +289,7 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
         que.add(dpkgName);
         while (!que.isEmpty()) {
             String dpkg = que.poll();
-            if (allDpkgMap.get(dpkg) == null) break;
+            if (allDpkgMap.get(dpkg) == null) continue;
             ans.put(dpkg, allDpkgMap.get(dpkg));
             List<String> lists = allDpkgMap.get(dpkg);
             for (int i = 0; i < lists.size(); i++) {
@@ -294,13 +300,165 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
         return ans;
     }
 
+    @Override
+    public List<String> queryMultipleFileDependencies(String containerID, List<String> filePaths) {
+        log.info("----start analysis multiple file dependency----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+        List<String> res = new ArrayList<>();
+        Set<String> set = new HashSet<>();
+        try {
+            Session session = sshConnectionPool.getSession();
 
+            for (String filePath : filePaths) {
+                String singleCommand = "docker exec " + containerID + " ldd " + filePath;
+                Map<String, Object> map = sshConnectionPool.executeCommand(session, singleCommand);
+                if (((Integer) map.get("code")).intValue() != 0) {
+                    continue;
+                }
+                String lddOut = map.get("out").toString();
 
+                // 正则表达式查找匹配的数据
+                String regex = "/[^\\s]+";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(lddOut);
+                while (matcher.find()) {
+                    String dynamicFilePath = matcher.group().trim().replaceAll("\n", "");
+                    String dynamicCommand = "docker exec " + containerID + " dpkg -S " + dynamicFilePath;
+                    Map<String, Object> library = sshConnectionPool.executeCommand(session, dynamicCommand);
 
+                    String dpkgPackages = library.get("out").toString().replaceAll("\n", "");
+                    if (!dpkgPackages.contains("no path found matching pattern")) {
+                        set.add(dpkgPackages.split(":")[0]);
+                    }
+                }
+            }
 
+            for (String lib : set) {
+                res.add(lib);
+            }
 
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+        log.info("----start analysis multiple file dependency----");
+        return res;
+    }
 
+    @Override
+    public List<String> queryInstalledDpkgByAPPName(String containerID, String appName) {
+        List<String> ans = new ArrayList<>();
+        List<String> allDpkgLists = getAllDpkgLists(containerID);
+        for (String str : allDpkgLists) {
+            if (str.contains(appName)) {
+                ans.add(str);
+            }
+        }
+        return ans;
+    }
+
+    @Override
+    public List<String> listNeedKeepDpkgs(String containerID, List<String> filePaths, String appName) {
+        List<String> installedDpkgs = queryInstalledDpkgByAPPName(containerID, appName);
+        List<String> needDpkgs = queryMultipleFileDependencies(containerID, filePaths);
+        if (!(installedDpkgs == null || installedDpkgs.size() == 0)) {
+            needDpkgs.addAll(installedDpkgs);
+        }
+
+        // 获取应用启动关联的所有依赖库
+        Map<String, List<String>> dpkgListMap = new HashMap<>();
+        Set<String> dpkgSet = new HashSet<>();
+
+        for (String direct : needDpkgs) {
+            dpkgSet.add(direct);
+            Map<String, List<String>> stringListMap = querySingleDpkgDependency(containerID, direct);
+            for (Map.Entry<String, List<String>> entry : stringListMap.entrySet()) {
+                if (dpkgListMap.containsKey(entry.getKey())) {
+                    dpkgListMap.get(entry.getKey()).addAll(entry.getValue());
+                } else {
+                    dpkgListMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
+        String filePath = "D:\\Workspace\\container-system\\image-system\\src\\conf\\debianKeepReservationDependencies.conf";
+        List<String> ans = keepReservationDependencies(containerID, filePath);
+
+        for (Map.Entry<String, List<String>> entry : dpkgListMap.entrySet()) {
+            dpkgSet.add(entry.getKey());
+            for (String str : entry.getValue()) {
+                dpkgSet.add(str);
+            }
+        }
+
+        for (String str : dpkgSet) {
+            ans.add(str);
+        }
+
+        return ans;
+    }
+
+    @Override
+    public List<String> keepReservationDependencies(String containerID, String reservationFile) {
+        List<String> handProcess = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(reservationFile))) {
+            String line = new String();
+            while ((line = br.readLine()) != null) {
+                handProcess.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return handProcess;
+    }
+
+    @Override
+    public List<String> listNeedDeleteDpkgs(String containerID, List<String> keepDpkgs) {
+        List<String> allDpkgLists = getAllDpkgLists(containerID);
+        Set<String> set = new HashSet<>();
+        for (String str : allDpkgLists) set.add(str.split(":")[0]);
+        for (String str : keepDpkgs) {
+            if (set.contains(str)) set.remove(str);
+        }
+        List<String> ans = new ArrayList<>();
+        for (String str : set) ans.add(str);
+        return ans;
+    }
+
+    @Override
+    public Boolean deleteDpkgDependencies(String containerID, List<String> deleteRpmList) {
+        log.info("----start optimize docker image----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+
+        try {
+            Session session = sshConnectionPool.getSession();
+
+            log.info("----start delete dpkg dependencies----");
+            // 删除容器中相关依赖项
+            String command = "docker exec " + containerID + " dpkg --purge --force-all ";
+
+            Map<String, Object> map = new HashMap<>();
+            for (String str : deleteRpmList) {
+                System.out.println("正在删除 ： " + str);
+                command += str;
+                map = sshConnectionPool.executeCommand(session, command);
+            }
+
+            if (((Integer) map.get("code")).intValue() != 0)  {
+                Object err = map.get("err");
+                System.out.println("err : " + err.toString());
+                log.info("----删除镜像依赖失败----");
+                return false;
+            }
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+        log.info("----optimize docker image succeed----");
+        return true;
+    }
 
 
     @Override

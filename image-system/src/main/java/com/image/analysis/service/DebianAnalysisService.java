@@ -40,6 +40,35 @@ public interface DebianAnalysisService {
      **/
     Map<String, List<String>> querySingleDpkgDependency(String containerID, String dpkgName);
 
+    /**
+     * 查询所有可执行文件路径，查询依赖的rpm包
+     **/
+    List<String> queryMultipleFileDependencies(String containerID, List<String> filePaths);
+
+    /**
+     * 查询是否存在以应用名称安装的dpkg软件包
+     **/
+    List<String> queryInstalledDpkgByAPPName(String containerID, String appName);
+
+    /**
+     * 列出所有需要保留的dpkg包
+     **/
+    List<String> listNeedKeepDpkgs(String containerID, List<String> filePaths, String appName);
+
+    /**
+     * 根据手动优化的经验，需要保留的BaseOS的dpkg包
+     **/
+    List<String> keepReservationDependencies(String containerID, String reservationFile);
+
+    /**
+     * 列出所有需要保留的dpkg包
+     **/
+    List<String> listNeedDeleteDpkgs(String containerID, List<String> keepDpkgs);
+
+    /**
+     * 删除无关联的dpkg
+     **/
+    Boolean deleteDpkgDependencies(String containerID, List<String> deleteRpmList);
 
 
 
