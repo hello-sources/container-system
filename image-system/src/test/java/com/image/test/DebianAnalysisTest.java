@@ -199,11 +199,24 @@ public class DebianAnalysisTest {
     @Test
     public void testDeleteDpkgDependencies() {
         List<String> filePaths = new ArrayList<>();
-        filePaths.add("/usr/bin/mysql");
-        filePaths.add("/usr/sbin/mysqld");
-        List<String> mysqlDpkgs = debianAnalysisServiceImpl.listNeedKeepDpkgs("112d40ae881e", filePaths, "mysql");
-        List<String> needDeleteDpkgs = debianAnalysisServiceImpl.listNeedDeleteDpkgs("112d40ae881e", mysqlDpkgs);
-        Boolean res = debianAnalysisServiceImpl.deleteDpkgDependencies("112d40ae881e", needDeleteDpkgs);
+        filePaths.add("/usr/local/bin/redis-benchmark");
+        filePaths.add("/usr/local/bin/redis-check-aof");
+        filePaths.add("/usr/local/bin/redis-check-rdb");
+        filePaths.add("/usr/local/bin/redis-cli");
+        filePaths.add("/usr/local/bin/redis-sentinel");
+        filePaths.add("/usr/local/bin/redis-server");
+
+        List<String> redisDpkgs = debianAnalysisServiceImpl.listNeedKeepDpkgs("35b12687aae8", filePaths, "redis");
+        System.out.println("redisDpkgs size : " + redisDpkgs.size());
+        for (String str : redisDpkgs) {
+            System.out.println(str);
+        }
+        List<String> needDeleteDpkgs = debianAnalysisServiceImpl.listNeedDeleteDpkgs("35b12687aae8", redisDpkgs);
+        System.out.println("needDeleteDpkgs size : " + needDeleteDpkgs.size());
+        for (String str : needDeleteDpkgs) {
+            System.out.println(str);
+        }
+        Boolean res = debianAnalysisServiceImpl.deleteDpkgDependencies("35b12687aae8", needDeleteDpkgs);
         if (res) {
             System.out.println("删除依赖项成功");
         } else {
@@ -221,7 +234,7 @@ public class DebianAnalysisTest {
     public void testCommitToImage() {
         String imageName = "wrf-optimize";
         String tag = "v1";
-        Boolean commitRes = debianAnalysisServiceImpl.commitToImage("112d40ae881e", imageName, tag);
+        Boolean commitRes = debianAnalysisServiceImpl.commitToImage("6d4feb4e1777", imageName, tag);
         if (commitRes) {
             System.out.println("commit导出镜像成功");
         } else {
@@ -232,10 +245,10 @@ public class DebianAnalysisTest {
     // 测试使用export导出为新镜像
     @Test
     public void testExportToTarImage() {
-        String imageName = "mysql-optimize";
+        String imageName = "redis-optimize";
         String tag = "v1";
         String path = "/root/docker_images";
-        Boolean exportRes = debianAnalysisServiceImpl.exportToTarImage("112d40ae881e", imageName, tag, path);
+        Boolean exportRes = debianAnalysisServiceImpl.exportToTarImage("35b12687aae8", imageName, tag, path);
         if (exportRes) {
             System.out.println("export导出tar镜像成功");
         } else {

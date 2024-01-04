@@ -441,15 +441,12 @@ public class DebianAnalysisServiceImpl implements DebianAnalysisService {
             Map<String, Object> map = new HashMap<>();
             for (String str : deleteRpmList) {
                 System.out.println("正在删除 ： " + str);
-                command += str;
-                map = sshConnectionPool.executeCommand(session, command);
-            }
-
-            if (((Integer) map.get("code")).intValue() != 0)  {
-                Object err = map.get("err");
-                System.out.println("err : " + err.toString());
-                log.info("----删除镜像依赖失败----");
-                return false;
+                map = sshConnectionPool.executeCommand(session, command + str);
+                if (((Integer) map.get("code")).intValue() != 0)  {
+                    Object err = map.get("err");
+                    System.out.println("err : " + err.toString());
+                    log.info("----删除镜像依赖失败----");
+                }
             }
 
             sshConnectionPool.releaseSession(session);
