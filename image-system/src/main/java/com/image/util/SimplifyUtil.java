@@ -1,5 +1,8 @@
 package com.image.util;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,5 +37,20 @@ public class SimplifyUtil {
             ans.add(s.split("[(]")[0].trim());
         }
         return ans;
+    }
+    
+    // 获取当前时间，精确到毫秒
+    public String getCurrentTime() {
+        LocalDateTime currentTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        return currentTime.format(formatter);
+    }
+
+    // 获取两段时间时间差
+    public Long timeDuration(String startTime, String endTime) {
+        LocalDateTime start = LocalDateTime.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        LocalDateTime end = LocalDateTime.parse(endTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        Duration duration = Duration.between(end, start);
+        return duration.toMillis();
     }
 }

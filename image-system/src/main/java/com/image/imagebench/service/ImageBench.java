@@ -6,7 +6,7 @@ public interface ImageBench {
     /**
      * 测试由镜像创建容器时间，单位秒
      **/
-    Float getContainerCreateTime(String imageName, String tag);
+    Long getContainerCreateTime(String imageName, String tag);
 
 
     /**
