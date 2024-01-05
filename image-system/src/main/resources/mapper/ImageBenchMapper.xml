@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.image.imagebench.mapper.ImageBenchMapper">
+    <resultMap id="ContainerCreateTimeEntity" type="com.image.imagebench.entity.ContainerCreateTimeEntity">
+        <result column="image_name" property="image_name"/>
+        <result column="image_tag" property="image_tag"/>
+        <result column="image_id" property="image_id"/>
+        <result column="image_size" property="image_size"/>
+        <result column="container_id" property="container_id"/>
+        <result column="create_time" property="create_time"/>
+    </resultMap>
+
+    <insert id="insertResults" parameterType="java.util.List">
+        INSERT INTO container_create_time
+        (
+        image_name,
+        image_tag,
+        image_id,
+        image_size,
+        container_id,
+        create_time
+        )
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.image_name},
+            #{item.image_tag},
+            #{item.image_id},
+            #{item.image_size},
+            #{item.container_id},
+            #{item.create_time}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

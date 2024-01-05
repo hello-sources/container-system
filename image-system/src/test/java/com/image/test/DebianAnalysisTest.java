@@ -260,8 +260,8 @@ public class DebianAnalysisTest {
     @Test
     public void testImportTarToImage() {
         String path = "/root/docker_images";
-        String sourTarImageName = "wrf-optimize-export-v1-2023-12-30.tar";
-        String destImageName = "wrf-optimize-import";
+        String sourTarImageName = "mysql-optimize-export-v1-2024-01-04.tar";
+        String destImageName = "mysql-optimize";
         String tag = "v1";
         Boolean importRes = debianAnalysisServiceImpl.importTarToImage(path, sourTarImageName, destImageName, tag);
         if (importRes) {
