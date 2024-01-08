@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.image.imagebench.mapper.ServiceStartTimeMapper">
+    <resultMap id="ServiceStartTimeEntity" type="com.image.imagebench.entity.ServiceStartTimeEntity">
+        <result column="app_name" property="app_name"/>
+        <result column="start_command" property="start_command"/>
+        <result column="image_name" property="image_name"/>
+        <result column="image_tag" property="image_tag"/>
+        <result column="image_id" property="image_id"/>
+        <result column="image_size" property="image_size"/>
+        <result column="container_id" property="container_id"/>
+        <result column="start_time" property="start_time"/>
+    </resultMap>
+
+    <insert id="insertStartTimeResults" parameterType="java.util.List">
+        INSERT INTO service_start_time
+        (
+        app_name,
+        start_command,
+        image_name,
+        image_tag,
+        image_id,
+        image_size,
+        container_id,
+        start_time
+        )
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.app_name},
+            #{item.start_command},
+            #{item.image_name},
+            #{item.image_tag},
+            #{item.image_id},
+            #{item.image_size},
+            #{item.container_id},
+            #{item.start_time}
+            )
+        </foreach>
+    </insert>
+
+
+</mapper>

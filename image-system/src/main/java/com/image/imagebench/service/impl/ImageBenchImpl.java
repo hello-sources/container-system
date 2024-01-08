@@ -54,7 +54,38 @@ public class ImageBenchImpl implements ImageBench {
     }
 
     @Override
-    public Float getContainerStartTime(String imageName, String tag, String startPath) {
-        return null;
+    public Long getServiceStartTime(String containerID, String startPath) {
+        log.info("----start start app service----");
+        SshConnectionPool sshConnectionPool = new SshConnectionPool();
+        Long duration = Long.MAX_VALUE;
+
+        try {
+            Session session = sshConnectionPool.getSession();
+            SimplifyUtil simplifyUtil = new SimplifyUtil();
+
+            String command = "docker exec  " + containerID + " " + startPath;
+            String beforeTime = simplifyUtil.getCurrentTime();
+            Map<String, Object> startService = sshConnectionPool.executeCommand(session, command);
+            String afterTime = simplifyUtil.getCurrentTime();
+            duration = simplifyUtil.timeDuration(afterTime, beforeTime);
+
+            Object code = startService.get("code");
+            if (((Integer) code).intValue() != 0)  {
+                Object err = startService.get("err");
+                System.out.println("err : " + err.toString());
+                log.info("----start app service failed----");
+                return Long.MAX_VALUE;
+            }
+
+            String out = startService.get("out").toString();
+            System.out.println(out);
+
+            sshConnectionPool.releaseSession(session);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+
+        log.info("---start app service succeed----");
+        return duration;
     }
 }
