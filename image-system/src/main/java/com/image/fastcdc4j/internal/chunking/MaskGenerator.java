@@ -137,9 +137,17 @@ public final class MaskGenerator {
      */
     private long generateMask(final int effectiveBitOffset) {
         final int effectiveBits = MaskGenerator.getEffectiveBits(expectedChunkSize) + effectiveBitOffset;
-        return switch (maskOption) {
-            case FAST_CDC -> MaskGenerator.generateMaskFastCdc(effectiveBits, seed);
-            case NLFIEDLER_RUST -> MaskGenerator.generateMaskNlfiedlerRust(effectiveBits);
-        };
+
+        if (maskOption.toString().equals(MaskOption.FAST_CDC.toString())) {
+            return MaskGenerator.generateMaskFastCdc(effectiveBits, seed);
+        } else {
+            return MaskGenerator.generateMaskNlfiedlerRust(effectiveBits);
+        }
+
+        // 原始一些错误的语句
+        // return switch (maskOption) {
+        //     case FAST_CDC -> MaskGenerator.generateMaskFastCdc(effectiveBits, seed);
+        //     case NLFIEDLER_RUST -> MaskGenerator.generateMaskNlfiedlerRust(effectiveBits);
+        // };
     }
 }

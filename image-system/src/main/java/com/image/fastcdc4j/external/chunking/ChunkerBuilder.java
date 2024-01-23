@@ -154,10 +154,21 @@ public final class ChunkerBuilder {
             return chunker;
         }
 
-        final long[] hashTableToUse = hashTable != null ? hashTable : switch (hashTableOption) {
-            case RTPAL -> HashTables.getRtpal();
-            case NLFIEDLER_RUST -> HashTables.getNlfiedlerRust();
-        };
+        // 原始一些出bug的代码
+        // final long[] hashTableToUse = hashTable != null ? hashTable : switch (hashTableOption) {
+        //     case RTPAL -> HashTables.getRtpal();
+        //     case NLFIEDLER_RUST -> HashTables.getNlfiedlerRust();
+        // };
+
+        final long[] hashTableToUse;
+        if (hashTable != null) hashTableToUse = hashTable;
+        else {
+            if (hashTableOption.toString().equals(HashTableOption.RTPAL.toString())) {
+                hashTableToUse = HashTables.getRtpal();
+            } else {
+                hashTableToUse = HashTables.getNlfiedlerRust();
+            }
+        }
 
         final MaskGenerator maskGenerator =
             new MaskGenerator(maskOption, normalizationLevel, expectedChunkSize, maskGenerationSeed);
@@ -169,13 +180,28 @@ public final class ChunkerBuilder {
         //noinspection NumericCastThatLosesPrecision
         final int maximalChunkSize = (int) (expectedChunkSize * maximalChunkSizeFactor);
 
-        final IterativeStreamChunkerCore coreToUse = chunkerCore != null ? chunkerCore : switch (chunkerOption) {
-            case FAST_CDC -> new FastCdcChunkerCore(expectedChunkSize, minimalChunkSize, maximalChunkSize,
-                hashTableToUse, maskSmallToUse, maskLargeToUse);
-            case NLFIEDLER_RUST -> new NlfiedlerRustChunkerCore(expectedChunkSize, minimalChunkSize, maximalChunkSize,
-                hashTableToUse, maskSmallToUse, maskLargeToUse);
-            case FIXED_SIZE_CHUNKING -> new FixedSizeChunkerCore(expectedChunkSize);
-        };
+        // 原先出现bug的一些代码
+        // final IterativeStreamChunkerCore coreToUse = chunkerCore != null ? chunkerCore : switch (chunkerOption) {
+        //     case FAST_CDC -> new FastCdcChunkerCore(expectedChunkSize, minimalChunkSize, maximalChunkSize,
+        //         hashTableToUse, maskSmallToUse, maskLargeToUse);
+        //     case NLFIEDLER_RUST -> new NlfiedlerRustChunkerCore(expectedChunkSize, minimalChunkSize, maximalChunkSize,
+        //         hashTableToUse, maskSmallToUse, maskLargeToUse);
+        //     case FIXED_SIZE_CHUNKING -> new FixedSizeChunkerCore(expectedChunkSize);
+        // };
+
+        final IterativeStreamChunkerCore coreToUse;
+        if (chunkerCore != null) coreToUse = chunkerCore;
+        else {
+            if (chunkerOption.toString().equals(ChunkerOption.FAST_CDC.toString())) {
+                coreToUse = new FastCdcChunkerCore(expectedChunkSize, minimalChunkSize, maximalChunkSize,
+                    hashTableToUse, maskSmallToUse, maskLargeToUse);
+            } else if (chunkerOption.toString().equals(ChunkerOption.NLFIEDLER_RUST.toString())) {
+                coreToUse = new NlfiedlerRustChunkerCore(expectedChunkSize, minimalChunkSize, maximalChunkSize,
+                    hashTableToUse, maskSmallToUse, maskLargeToUse);
+            } else {
+                coreToUse = new FixedSizeChunkerCore(expectedChunkSize);
+            }
+        }
         return new IterativeStreamChunker(coreToUse, hashMethod);
     }
 

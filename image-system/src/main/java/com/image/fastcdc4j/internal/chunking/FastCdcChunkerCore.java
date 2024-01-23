@@ -91,7 +91,7 @@ public final class FastCdcChunkerCore implements IterativeStreamChunkerCore {
                     "Attempting to read the next chunk but out of available bytes, as indicated by size");
             }
             if (n <= minSize) {
-                return stream.readNBytes((int) n);
+                return stream.readNBytes((int)n);
             }
             if (n >= maxSize) {
                 n = maxSize;
