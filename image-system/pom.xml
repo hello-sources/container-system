@@ -90,6 +90,24 @@
             <version>1.2.17</version>
         </dependency>
 
+        <!--Spring Data Redis-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!--引入redisson-->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.12.3</version>
+        </dependency>
+
+
+
+
+
+
         <!--添加FastCDC4J依赖项目-->
 <!--        <dependency>-->
 <!--            <groupId>io.github.zabuzard.fastcdc4j</groupId>-->
