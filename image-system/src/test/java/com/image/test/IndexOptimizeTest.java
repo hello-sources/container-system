@@ -7,6 +7,11 @@ import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.redisson.Redisson;
+import org.redisson.api.RBloomFilter;
+import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,6 +35,9 @@ public class IndexOptimizeTest {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private RedissonClient redissonClient;
 
     // 测试使用集成Redis
     @Test
@@ -74,25 +82,61 @@ public class IndexOptimizeTest {
             jsonObject.put("镜像名", "测试镜像名");
             String s = JSON.toJSONString(jsonObject);
             System.out.println(s);
-            this.stringRedisTemplate.opsForValue().set("chunkInfo-1", s);
+            this.stringRedisTemplate.opsForValue().set("chunkInfo-2", s);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println("向Redis中存值报错");
         }
         // 获取值
-        Object chunkInfo = stringRedisTemplate.opsForValue().get("chunkInfo-1");
+        Object chunkInfo = stringRedisTemplate.opsForValue().get("chunkInfo-2");
         System.out.println(chunkInfo.toString());
     }
 
     // 测试使用guava布隆过滤器
     @Test
     public void testBloomFilter() {
-        BloomFilter<CharSequence> bloomFilter  = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()),1000,0.0000001);
+        BloomFilter<CharSequence> bloomFilter  = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()),
+            1000,0.00000001);
         bloomFilter.put("abc");
         boolean  isContains = bloomFilter.mightContain("abcd");
         System.out.println(isContains );
     }
 
+    // 测试使用redisson创建布隆过滤器
+    @Test
+    public void testRedisson() {
+
+        /** 预计插入的数据 */
+        Integer expectedInsertions = 10000;
+        /** 误判率 */
+        Double fpp = 0.0000001;
+
+        RBloomFilter<Object> bloomFilter = redissonClient.getBloomFilter("user-redisson");
+        bloomFilter.tryInit(expectedInsertions, fpp);
+
+        // 布隆过滤器增加元素
+        for (Integer i = 0; i < expectedInsertions; i++) {
+            bloomFilter.add(i);
+        }
+
+        // 统计元素
+        int count = 0;
+        for (int i = expectedInsertions; i < expectedInsertions * 2; i++) {
+            if (bloomFilter.contains(i)) {
+                count++;
+            }
+        }
+        System.out.println("误判次数" + count);
+    }
+
+    // 测试使用redisson创建key-value
+    @Test
+    public void testRedissonBucket() {
+        RBucket<Object> bucket1 = redissonClient.getBucket("bucket1");
+        bucket1.set("v1234");
+        Object o = bucket1.get();
+        System.out.println(o.toString());
+    }
 }
 
 
