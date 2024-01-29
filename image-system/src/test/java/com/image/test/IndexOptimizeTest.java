@@ -7,11 +7,9 @@ import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.redisson.Redisson;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -95,11 +93,24 @@ public class IndexOptimizeTest {
     // 测试使用guava布隆过滤器
     @Test
     public void testBloomFilter() {
-        BloomFilter<CharSequence> bloomFilter  = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()),
-            1000,0.00000001);
-        bloomFilter.put("abc");
-        boolean  isContains = bloomFilter.mightContain("abcd");
-        System.out.println(isContains );
+        /** 预计插入的数据 */
+        Integer expectedInsertions = 1000000;
+
+        // BloomFilter<Integer> bloomFilter  = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()),
+        //     1000,0.00000001);
+        BloomFilter<Integer> bloomFilter = BloomFilter.create(Funnels.integerFunnel(), 1000000, 0.00000000000001);
+        // 布隆过滤器增加元素
+        for (Integer i = 0; i < expectedInsertions; i++) {
+            bloomFilter.put(i);
+        }
+        // 统计元素
+        int count = 0;
+        for (Integer i = expectedInsertions; i < expectedInsertions * 2; i++) {
+            if (bloomFilter.mightContain(i)) {
+                count++;
+            }
+        }
+        System.out.println("误判次数" + count);
     }
 
     // 测试使用redisson创建布隆过滤器
