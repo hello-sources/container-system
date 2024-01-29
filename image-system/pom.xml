@@ -96,6 +96,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- Spring Cache -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
         <!--引入redisson-->
         <dependency>
             <groupId>org.redisson</groupId>
@@ -103,10 +109,19 @@
             <version>3.12.3</version>
         </dependency>
 
+        <!--fastjson是阿里巴巴开源的JSON处理库-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.78</version>
+        </dependency>
 
-
-
-
+        <!--引入google guava-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>30.1.1-jre</version>
+        </dependency>
 
         <!--添加FastCDC4J依赖项目-->
 <!--        <dependency>-->
