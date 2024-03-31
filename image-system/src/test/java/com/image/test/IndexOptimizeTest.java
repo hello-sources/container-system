@@ -10,6 +10,7 @@ import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import com.image.dedup.entity.BloomFilterEntity;
 import com.image.dedup.mapper.BloomFilterMapper;
+import com.image.dedup.service.impl.DedupServiceImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.redisson.api.RBloomFilter;
@@ -49,6 +50,9 @@ public class IndexOptimizeTest {
 
     @Resource
     private BloomFilterMapper bloomFilterMapper;
+
+    @Resource
+    private DedupServiceImpl dedupServiceImpl;
 
     // 测试使用集成Redis
     @Test
@@ -457,5 +461,34 @@ public class IndexOptimizeTest {
         list.add(entity2);
         int i = bloomFilterMapper.insertBloomFilter(list);
         System.out.println(i);
+    }
+
+    // 测试创建布隆过滤器
+    @Test
+    public void testCreateBloomFilter() {
+        BloomFilterEntity entity = new BloomFilterEntity();
+        entity.setBloomFilterName("test_create_bloomFilter");
+        entity.setExpectedInsertions(123456L);
+        entity.setFpp(0.001);
+        RBloomFilter<Object> bloomFilter = dedupServiceImpl.createBloomFilter(entity);
+        System.out.println(bloomFilter.contains("132465"));
+    }
+
+    // 测试创建布隆过滤器组
+    @Test
+    public void testCreateBloomFilterGroup() {
+        List<BloomFilterEntity> list = new ArrayList<>();
+        BloomFilterEntity entity = new BloomFilterEntity();
+        entity.setBloomFilterName("test_bloomFilter1");
+        entity.setExpectedInsertions(100000L);
+        entity.setFpp(0.001);
+        BloomFilterEntity entity1 = new BloomFilterEntity();
+        entity1.setBloomFilterName("test_bloomFilter2");
+        entity1.setExpectedInsertions(100000L);
+        entity1.setFpp(0.001);
+        list.add(entity);
+        list.add(entity1);
+        List<RBloomFilter<Object>> bloomFilterGroup = dedupServiceImpl.createBloomFilterGroup(list);
+        System.out.println(bloomFilterGroup.size());
     }
 }

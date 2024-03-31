@@ -3,8 +3,10 @@ package com.image.dedup.service.impl;
 import com.image.dedup.entity.BloomFilterEntity;
 import com.image.dedup.mapper.BloomFilterMapper;
 import com.image.dedup.service.DedupService;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -16,6 +18,8 @@ import java.util.List;
  * @Author litianwei
  * @Date 2024/1/26
  **/
+@Slf4j
+@Service
 public class DedupServiceImpl implements DedupService {
 
     @Resource
@@ -44,6 +48,12 @@ public class DedupServiceImpl implements DedupService {
             ans.add(createBloomFilter(entity));
         }
         return ans;
+    }
+
+    @Override
+    public Boolean insertIntoBloom(String bloomFilterName, String fingerPrint) {
+
+        return null;
     }
 
     @Override

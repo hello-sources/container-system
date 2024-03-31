@@ -13,6 +13,9 @@ public interface DedupService {
     // 创建布隆过滤器组
     List<RBloomFilter<Object>> createBloomFilterGroup(List<BloomFilterEntity> blooms);
 
+    // 向布隆过滤器插入数据
+    Boolean insertIntoBloom(String bloomFilterName, String fingerPrint);
+
     // 根据布隆过滤器查询相应的指纹信息
     String queryFingerprintInfo(String bucket, String hash);
 

@@ -7,7 +7,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 
 @MapperScan({"com.image.*.mapper"})
-@ComponentScan({"com.image.imagebench", "com.image.analysis"})
+@ComponentScan({"com.image.imagebench", "com.image.analysis", "com.image.dedup"})
 @SpringBootApplication
 @EnableCaching
 public class SystemApplication {
