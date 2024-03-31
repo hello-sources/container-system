@@ -3,17 +3,13 @@ package com.image.fastcdc4j.internal.chunking;
 import com.image.fastcdc4j.external.chunking.Chunker;
 
 /**
- * Provides different hash tables, used by several {@link Chunker}s as noise to
- * improve the splitting behavior for relatively similar content.
  *
  * @Author litianwei
  * @Date 2024/1/22
  **/
 public enum HashTables {
     ;
-    /**
-     * Table used by NlFielder-Rust.
-     */
+
     @SuppressWarnings("OverlyLargePrimitiveArrayInitializer")
     private static final long[] NLFIEDLER_RUST =
         { 0x5c95c078L, 0x22408989L, 0x2d48a214L, 0x12842087L, 0x530f8afbL, 0x474536b9L, 0x2963b4f1L, 0x44cb738bL,
@@ -53,9 +49,7 @@ public enum HashTables {
             0x5626407eL, 0x7f63bd46L, 0x32d2dbd8L, 0x3c790f4aL, 0x772b7239L, 0x6f8b2826L, 0x677ff609L,
             0x0dc82c11L, 0x23ffe354L, 0x2eac53a6L, 0x16139e09L, 0x0afd0dbcL, 0x2a4d4237L, 0x56a368c7L,
             0x234325e4L, 0x2dce9187L, 0x32e8ea7eL };
-    /**
-     * Table used by RTPal.
-     */
+
     @SuppressWarnings("OverlyLargePrimitiveArrayInitializer")
     private static final long[] RTPAL =
         { 0x5a16b18f2aac863eL, 0x05fad735784f09eaL, 0x355c6a3868fe64afL, 0x57df89c95716c702L, 0x46ea7572135544a6L,
@@ -123,20 +117,12 @@ public enum HashTables {
             0x000eab4e77327b81L, 0x0fd333301966ff16L, 0x6780eb8339b83286L, 0x7652a5e647799673L,
             0x43c0db665e364315L, 0x6fe4fe01606d405dL, 0x6833dbd876b03920L };
 
-    /**
-     * Gets the table used by Nlfiedler-Rust
-     *
-     * @return The table
-     */
+
     public static long[] getNlfiedlerRust() {
         return HashTables.NLFIEDLER_RUST.clone();
     }
 
-    /**
-     * Gets the table used by RTPal.
-     *
-     * @return The table
-     */
+
     public static long[] getRtpal() {
         return HashTables.RTPAL.clone();
     }

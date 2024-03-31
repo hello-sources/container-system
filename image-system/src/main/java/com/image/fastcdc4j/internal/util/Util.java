@@ -14,23 +14,12 @@ import java.util.Objects;
  **/
 public enum Util {
     ;
-    /**
-     * Small delta to counter floating point issues when rounding down would accidentally round down a full integer to
-     * much.
-     */
+
     private static final double FLOATING_DELTA = 1.0e-12;
-    /**
-     * All characters available in the hexadecimal-system, as UTF-8 encoded array.
-     */
+
     private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.UTF_8);
 
-    /**
-     * Creates a hexadecimal representation of the given binary data.
-     *
-     * @param bytes The binary data to convert, not null
-     *
-     * @return Hexadecimal representation
-     */
+
     @SuppressWarnings("MagicNumber")
     public static String bytesToHex(final byte[] bytes) {
         Objects.requireNonNull(bytes);
@@ -48,14 +37,7 @@ public enum Util {
         return new String(hexChars, StandardCharsets.UTF_8);
     }
 
-    /**
-     * Hashes the given data using the given method.
-     *
-     * @param method The method to use for hashing, must be supported by {@link MessageDigest}, not null
-     * @param data   The data to hash, not null
-     *
-     * @return The computed hash
-     */
+
     public static byte[] hash(final String method, final byte[] data) {
         Objects.requireNonNull(method);
         Objects.requireNonNull(data);
@@ -67,13 +49,7 @@ public enum Util {
         }
     }
 
-    /**
-     * Computes the logarithm to the base 2 of the given value.
-     *
-     * @param x The value to compute the log2 of, must be positive and not zero
-     *
-     * @return The log2 of the given value
-     */
+
     public static int log2(final int x) {
         Validations.requirePositiveNonZero(x, "Value");
         // Safe binary-only conversion without floating points

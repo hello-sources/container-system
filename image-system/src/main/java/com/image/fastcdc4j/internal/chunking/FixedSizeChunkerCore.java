@@ -9,23 +9,15 @@ import java.io.UncheckedIOException;
 import java.util.Objects;
 
 /**
- * Implementation of an iterative stream chunker core that splits data into chunks of equal size, known as {@code
- * Fixed-Size-Chunking}.
  *
  * @Author litianwei
  * @Date 2024/1/22
  **/
 public final class FixedSizeChunkerCore implements IterativeStreamChunkerCore {
-    /**
-     * The fixed chunk size to use for splitting.
-     */
+
     private final int chunkSize;
 
-    /**
-     * Creates a new core.
-     *
-     * @param chunkSize The fixed chunk size to use for splitting, must be positive and not zero
-     */
+
     public FixedSizeChunkerCore(final int chunkSize) {
         this.chunkSize = Validations.requirePositiveNonZero(chunkSize, "Chunk size");
     }

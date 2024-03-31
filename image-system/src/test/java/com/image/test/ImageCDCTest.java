@@ -78,7 +78,6 @@ public class ImageCDCTest {
         testList.addAll(fileNames);
         testList.addAll(fileNames);
 
-
         // 根据分块之后的数据进行读取拼接，还原为源文件
         Path targetFile = Paths.get("D:\\Workspace\\container-system\\image-system\\src\\CDC\\CDCRebuild\\sheldon-lee"
             + "-rebuild-double.mp4");
@@ -135,7 +134,6 @@ public class ImageCDCTest {
         List<String> testList = new ArrayList<>();
         testList.addAll(fileNames);
         testList.addAll(fileNames);
-
 
         // 根据分块之后的数据进行读取拼接，还原为源文件
         Path targetFile = Paths.get("D:\\Workspace\\container-system\\image-system\\src\\CDC\\CDCRebuild\\article"
@@ -207,5 +205,25 @@ public class ImageCDCTest {
             }
         }
         System.out.println("cnt size : " + cnt);
+    }
+
+    // 对tar文件进行分块
+    @Test
+    public void testChunkTarFile() throws IOException {
+        Chunker chunkerBuilder = new ChunkerBuilder().fastCdc().build();
+        String buildPath = "D:\\Workspace\\container-system\\image-system\\src\\CDC\\CDCFile\\redis-optimize-export-v1-2024-01-04.tar";
+        String cachePath = "D:\\Workspace\\container-system\\image-system\\src\\CDC\\CDCCache\\redis-optimize-export-v1-2024-01-04";
+        Path path = Paths.get(cachePath);
+        System.out.println("cache Path : " + path);
+
+        // 对原目录中的文件进行分块
+        Iterable<Chunk> chunk = chunkerBuilder.chunk(Paths.get(buildPath));
+        List<String> fileNames = new ArrayList<>();
+        for (Chunk chk : chunk) {
+            Path resolve = path.resolve(chk.getHexHash());
+            fileNames.add(chk.getHexHash());
+            System.out.println("chunk write path : " + resolve);
+            Files.write(resolve, chk.getData());
+        }
     }
 }

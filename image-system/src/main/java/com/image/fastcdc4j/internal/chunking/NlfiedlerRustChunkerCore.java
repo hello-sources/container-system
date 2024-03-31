@@ -10,54 +10,24 @@ import java.io.UncheckedIOException;
 import java.util.Objects;
 
 /**
- * Implementation of an iterative stream chunker core that chunks according to a modified FastCDC algorithm (by Nathan
- * Fiedler (<a href="https://github.com/nlfiedler/fastcdc-rs">source</a>)).
- *
  * @Author litianwei
  * @Date 2024/1/22
  */
 public final class NlfiedlerRustChunkerCore implements IterativeStreamChunkerCore {
-    /**
-     * The expected average size for a single chunk, in bytes.
-     */
+
     private final int expectedSize;
-    /**
-     * The hash table, also known as {@code gear} used as noise to improve the splitting behavior for relatively similar
-     * content.
-     */
+
     private final long[] gear;
-    /**
-     * Mask for the fingerprint that is used for bigger windows, to increase the likelihood of a split.
-     */
+
     private final long maskLarge;
-    /**
-     * Mask for the fingerprint that is used for smaller windows, to decrease the likelihood of a split.
-     */
+
     private final long maskSmall;
-    /**
-     * The maximal size for a single chunk, in bytes.
-     */
+
     private final int maxSize;
-    /**
-     * The minimal size for a single chunk, in bytes.
-     */
+
     private final int minSize;
 
-    /**
-     * Creates a new core.
-     *
-     * @param expectedSize The expected size for a single chunk, in bytes, must be positive
-     * @param minSize      The minimal size for a single chunk, in bytes, must be positive and less equals expected
-     *                     size
-     * @param maxSize      The maximal size for a single chunk, in bytes, must be positive and greater equals expected
-     *                     size
-     * @param gear         The hash table, also known as {@code gear} used as noise to improve the splitting behavior
-     *                     for relatively similar content, must have a length of exactly 256, one hash per byte value
-     * @param maskSmall    Mask for the fingerprint that is used for smaller windows, to decrease the likelihood of a
-     *                     split
-     * @param maskLarge    Mask for the fingerprint that is used for bigger windows, to increase the likelihood of a
-     *                     split
-     */
+
     @SuppressWarnings("ConstructorWithTooManyParameters")
     public NlfiedlerRustChunkerCore(final int expectedSize, final int minSize, final int maxSize, final long[] gear,
         final long maskSmall, final long maskLarge) {

@@ -14,29 +14,17 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
- * Implementation of a chunker that iteratively chunks the stream by using a given {@link IterativeStreamChunkerCore} as
- * core for the chunking behavior.
  *
  * @Author litianwei
  * @Date 2024/1/22
  **/
 public final class IterativeStreamChunker implements Chunker {
-    /**
-     * The core to use for chunking.
-     */
+
     private final IterativeStreamChunkerCore core;
-    /**
-     * The method to use for hashing the data of a chunk.
-     */
+
     private final String hashMethod;
 
-    /**
-     * Creates a new chunker.
-     *
-     * @param core       The core to use for chunking, not null
-     * @param hashMethod The hash method to use for hashing the data of a chunk, has to be supported and accepted by
-     *                   {@link java.security.MessageDigest}
-     */
+
     public IterativeStreamChunker(final IterativeStreamChunkerCore core, final String hashMethod) {
         Objects.requireNonNull(hashMethod);
         try {
@@ -56,41 +44,20 @@ public final class IterativeStreamChunker implements Chunker {
         return () -> new ChunkerIterator(stream, size, core, hashMethod);
     }
 
-    /**
-     * Iterator that generates chunks on the fly, as requested. Using the given core for the chunking behavior.
-     *
-     * @author Daniel Tischner {@literal <zabuza.dev@gmail.com>}
-     */
+
     private static final class ChunkerIterator implements Iterator<Chunk> {
-        /**
-         * The core to use for chunking.
-         */
+
         private final IterativeStreamChunkerCore core;
-        /**
-         * The method to use for hashing the data of a chunk.
-         */
+
         private final String hashMethod;
-        /**
-         * The amount of bytes available in the stream that are subject to be chunked.
-         */
+
         private final long size;
-        /**
-         * The data stream to chunk.
-         */
+
         private final InputStream stream;
-        /**
-         * The current offset in the data stream, marking the beginning of the next chunk.
-         */
+
         private long currentOffset;
 
-        /**
-         * @param stream     The data stream to chunk, not null
-         * @param size       The amount of bytes available in the stream that are subject to be chunked, the stream must
-         *                   offer at least that many bytes, positive and not zero
-         * @param core       The core to use for chunking, not null
-         * @param hashMethod The hash method to use for hashing the data of a chunk, has to be supported and accepted by
-         *                   {@link java.security.MessageDigest}
-         */
+
         private ChunkerIterator(final InputStream stream, final long size, final IterativeStreamChunkerCore core,
             final String hashMethod) {
             Objects.requireNonNull(hashMethod);
