@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
+import com.image.dedup.entity.BloomFilterEntity;
+import com.image.dedup.mapper.BloomFilterMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties.Jaas;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,7 +23,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,9 @@ public class IndexOptimizeTest {
 
     @Resource
     private RedissonClient redissonClient;
+
+    @Resource
+    private BloomFilterMapper bloomFilterMapper;
 
     // 测试使用集成Redis
     @Test
@@ -426,5 +430,32 @@ public class IndexOptimizeTest {
             System.out.println(e.getMessage());
             System.out.println("删除字符串报错");
         }
+    }
+
+    // 查询所有布隆过滤器
+    @Test
+    public void testQueryAllBloomFilter() {
+        List<BloomFilterEntity> bloomFilterEntities = bloomFilterMapper.queryAllBloomFilterName();
+        for (int i = 0; i < bloomFilterEntities.size(); i++) {
+            System.out.println(bloomFilterEntities.get(i));
+        }
+    }
+
+    // 插入布隆过滤器信息到数据表中
+    @Test
+    public void testInsertBloomFilterInfo() {
+        List<BloomFilterEntity> list = new ArrayList<>();
+        BloomFilterEntity entity1 = new BloomFilterEntity();
+        entity1.setBloomFilterName("bloom4");
+        entity1.setExpectedInsertions(100000L);
+        entity1.setFpp(0.001);
+        BloomFilterEntity entity2 = new BloomFilterEntity();
+        entity2.setBloomFilterName("bloom5");
+        entity2.setExpectedInsertions(1000000L);
+        entity2.setFpp(0.0001);
+        list.add(entity1);
+        list.add(entity2);
+        int i = bloomFilterMapper.insertBloomFilter(list);
+        System.out.println(i);
     }
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.image.dedup.mapper.BloomFilterMapper">
+    <resultMap id="BloomFilterEntity" type="com.image.dedup.entity.BloomFilterEntity">
+        <result column="bloomFilterName" property="bloomFilterName"/>
+        <result column="expectedInsertions" property="expectedInsertions"/>
+        <result column="fpp" property="fpp"/>
+    </resultMap>
+
+    <select id="queryAllBloomFilterName" resultType="com.image.dedup.entity.BloomFilterEntity">
+        select *  from bloom_filters
+    </select>
+
+    <insert id="insertBloomFilter" parameterType="java.util.List">
+        INSERT INTO bloom_filters
+        (
+        bloomFilterName,
+        expectedInsertions,
+        fpp
+        )
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.bloomFilterName},
+            #{item.expectedInsertions},
+            #{item.fpp}
+            )
+        </foreach>
+    </insert>
+
+</mapper>
