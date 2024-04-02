@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.image.dedup.mapper.HashBucketMapper">
+    <resultMap id="BloomFilterEntity" type="com.image.dedup.entity.HashBucketEntity">
+        <result column="id" property="id"/>
+        <result column="bloomFilterName" property="bloomFilterName"/>
+        <result column="bucketName" property="bucketName"/>
+        <result column="bloomFilterID" property="bloomFilterID"/>
+    </resultMap>
+
+    <select id="queryAllByBucketName" resultType="java.lang.String">
+        select bucketName  from hash_bucket
+    </select>
+
+    <insert id="insertHashBucket" parameterType="java.util.List">
+        INSERT INTO hash_bucket
+        (
+        bucketName,
+        bloomFilterName,
+        bloomFilterID
+        )
+        VALUES
+        <foreach collection="list" separator="," item="item">
+            (
+            #{item.bucketName},
+            #{item.bloomFilterName},
+            #{item.bloomFilterID}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

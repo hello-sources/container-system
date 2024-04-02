@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 import com.image.dedup.entity.BloomFilterEntity;
+import com.image.dedup.entity.HashBucketEntity;
 import com.image.dedup.mapper.BloomFilterMapper;
 import com.image.dedup.service.impl.DedupServiceImpl;
 import org.junit.Test;
@@ -24,10 +25,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * IndexOptimizeTest
@@ -491,4 +494,116 @@ public class IndexOptimizeTest {
         List<RBloomFilter<Object>> bloomFilterGroup = dedupServiceImpl.createBloomFilterGroup(list);
         System.out.println(bloomFilterGroup.size());
     }
+
+    // 测试向布隆过滤器中添加和查询元素
+    @Test
+    public void testQueryAndAddInfo() {
+        String fingerPrint = "0x123fabcdef456789";
+        String bloomFilterName = "test_bloomFilter1";
+        Boolean aBoolean = dedupServiceImpl.bloomFilterFindFp(fingerPrint, bloomFilterName);
+        if (aBoolean) {
+            System.out.println("查询：" + fingerPrint + " 成功");
+        } else {
+            System.out.println("查询：" + fingerPrint + " 失败");
+        }
+        Boolean aBoolean1 = dedupServiceImpl.insertIntoBloom(bloomFilterName, fingerPrint);
+        if (!aBoolean1) {
+            System.out.println("插入数据失败");
+        }
+        Boolean aBoolean2 = dedupServiceImpl.bloomFilterFindFp(fingerPrint, bloomFilterName);
+        if (aBoolean2) {
+            System.out.println("查询：" + fingerPrint + " 成功");
+        } else {
+            System.out.println("查询：" + fingerPrint + " 失败");
+        }
+    }
+
+    // 查询bucket里面对应哈希值的元数据信息
+    @Test
+    public void testQeuryMetaInfoFromBucket() {
+        String bucketName = "multi-json-list";
+        String hash = "0C0BB1B6C7597DB1401516BF6EE5C833AB5AC5C0";
+        JSONObject jsonObject = dedupServiceImpl.queryFingerprintInfo(bucketName, hash);
+        System.out.println(jsonObject.get("key"));
+        System.out.println(jsonObject.get("loc"));
+        System.out.println(jsonObject.get("offset"));
+        System.out.println(jsonObject.get("blockSize"));
+    }
+
+    // 测试删除bucket里面对应哈希值的元数据信息
+    @Test
+    public void testDeleteInfoFromBucket() throws IOException {
+        String bucketName = "multi-json-list";
+        String hash = "0CF9E13DD5EEAB68EDC9B620835B02DBEAC47972";
+        Boolean res = dedupServiceImpl.deleteFingerprintInfo(bucketName, hash);
+        if (res) {
+            System.out.println("删除元数据成功");
+        } else {
+            System.out.println("删除元数据失败");
+        }
+    }
+
+    // 尝试向布隆过滤器添加元素
+    @Test
+    public void testAddMetaInfoToBucket() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("key", "lovelovelovelovelovelovelove");
+        jsonObject.put("loc", "/ltw/ltw");
+        jsonObject.put("blockSize", "5.20KB");
+        jsonObject.put("offset", "1111111");
+
+        String bucketName = "multi-json-list";
+        dedupServiceImpl.addMetaInfoToBucket(bucketName, jsonObject);
+    }
+
+    // 查询所有的哈希桶
+    @Test
+    public void testQueryAllBuckets() {
+        Set<String> set = dedupServiceImpl.queryAllHashBucket();
+        for (String str : set) {
+            System.out.println(str);
+        }
+    }
+
+    // 测试删除哈希桶
+    @Test
+    public void testDeleteHashBucket() {
+        stringRedisTemplate.opsForHash().put("testHash", "value1", "value2");
+        System.out.println(stringRedisTemplate.opsForHash().get("testHash", "value1"));
+        Boolean testHash = dedupServiceImpl.destroyHashBucket("testHash");
+        if (testHash) {
+            System.out.println("删除bucket成功");
+        } else {
+            System.out.println("删除bucket失败");
+        }
+    }
+
+    // 从数据库中查询哈希桶信息
+    @Test
+    public void testQueryAllHashBucketInfo() {
+        List<String> strings = dedupServiceImpl.queryHashBucketName();
+        for (String name : strings) {
+            System.out.println(name);
+        }
+    }
+
+    // 向数据库中插入哈希桶信息
+    @Test
+    public void testInsertHashBucketInfo() {
+        List<HashBucketEntity> hashBucketEntities = new ArrayList<>();
+        HashBucketEntity entity1 = new HashBucketEntity();
+        entity1.setBucketName("testBucket1");
+        entity1.setBloomFilterID(3);
+        entity1.setBloomFilterName("testBloomFilter1");
+        HashBucketEntity entity2 = new HashBucketEntity();
+        entity2.setBucketName("testBucket2");
+        entity2.setBloomFilterID(4);
+        entity2.setBloomFilterName("testBloomFilter3");
+        hashBucketEntities.add(entity1);
+        hashBucketEntities.add(entity2);
+        int i = dedupServiceImpl.insertHashBucketInfo(hashBucketEntities);
+        System.out.println("插入了 " + i + " 条数据");
+
+    }
+
 }
