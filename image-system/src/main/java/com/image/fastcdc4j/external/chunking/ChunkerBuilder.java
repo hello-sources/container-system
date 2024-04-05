@@ -133,6 +133,18 @@ public final class ChunkerBuilder {
         return this;
     }
 
+    public ChunkerBuilder fastCdc_Re() {
+        chunkerOption = ChunkerOption.FAST_CDC;
+        hashMethod = ChunkerBuilder.DEFAULT_HASH_METHOD;
+        expectedChunkSize = ChunkerBuilder.DEFAULT_EXPECTED_CHUNK_SIZE;
+        minimalChunkSizeFactor = ChunkerBuilder.DEFAULT_MIN_SIZE_FACTOR;
+        maximalChunkSizeFactor = ChunkerBuilder.DEFAULT_MAX_SIZE_FACTOR;
+        hashTableOption = HashTableOption.RTPAL;
+        normalizationLevel = 2;
+        maskOption = MaskOption.FAST_CDC;
+        maskGenerationSeed = ChunkerBuilder.DEFAULT_MASK_GENERATION_SEED;
+        return this;
+    }
 
     public ChunkerBuilder nlFiedlerRust() {
         chunkerOption = ChunkerOption.NLFIEDLER_RUST;

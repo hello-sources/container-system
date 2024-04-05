@@ -10,6 +10,8 @@ public enum ChunkerOption {
 
     FAST_CDC,
 
+    FASTCDC_RE,
+
     NLFIEDLER_RUST,
 
     FIXED_SIZE_CHUNKING

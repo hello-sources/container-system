@@ -457,7 +457,8 @@ public class ImageCDCTest {
     // 尝试使用切割过程产生的数据，进行拼接
     @Test
     public void testCombineFile() throws IOException {
-        Chunker chunkerBuilder = new ChunkerBuilder().fastCdc().build();
+        // Chunker chunkerBuilder = new ChunkerBuilder().fastCdc().build();
+        Chunker chunkerBuilder = new ChunkerBuilder().fastCdc_Re().build();
         String buildPath = "D:\\Workspace\\container-system\\image-system\\src\\CDC\\CDCFile\\redis-optimize-export-v1-2024-01-04.tar";
         String cachePath = "D:\\Workspace\\container-system\\image-system\\src\\CDC\\CDCCache\\redis-optimize-export"
             + "-v3-2024-04-03";
